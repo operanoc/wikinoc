@@ -1,0 +1,2024 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wiki MSGW - AS400 / JDE Edwards</title>
+<style>
+:root {
+  --bg: #f5f6f8;
+  --bg-card: #ffffff;
+  --bg-sidebar: #1e293b;
+  --bg-sidebar-hover: #334155;
+  --bg-code: #f1f5f9;
+  --bg-code-dark: #0f172a;
+  --text: #1e293b;
+  --text-muted: #64748b;
+  --text-sidebar: #e2e8f0;
+  --text-sidebar-muted: #94a3b8;
+  --border: #e2e8f0;
+  --border-strong: #cbd5e1;
+  --accent: #2563eb;
+  --accent-hover: #1d4ed8;
+  --severity-info: #0891b2;
+  --severity-warning: #d97706;
+  --severity-critical: #dc2626;
+  --severity-info-bg: #ecfeff;
+  --severity-warning-bg: #fffbeb;
+  --severity-critical-bg: #fef2f2;
+  --shadow-sm: 0 1px 2px 0 rgba(0,0,0,0.05);
+  --shadow: 0 4px 6px -1px rgba(0,0,0,0.07), 0 2px 4px -2px rgba(0,0,0,0.05);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  height: 100%;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue",
+    Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text);
+  background: var(--bg);
+}
+
+a { color: var(--accent); text-decoration: none; }
+a:hover { color: var(--accent-hover); text-decoration: underline; }
+
+/* HEADER */
+header {
+  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+  color: #fff;
+  padding: 18px 28px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: var(--shadow);
+  border-bottom: 3px solid var(--accent);
+}
+header .header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+header h1 {
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+header .subtitle {
+  color: var(--text-sidebar-muted);
+  font-size: 12px;
+  margin-top: 2px;
+}
+header .meta {
+  font-size: 12px;
+  color: var(--text-sidebar-muted);
+  text-align: right;
+}
+
+/* SEARCH BAR */
+.search-bar {
+  padding: 14px 28px;
+  background: #fff;
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 76px;
+  z-index: 99;
+}
+.search-bar input {
+  width: 100%;
+  max-width: 720px;
+  padding: 10px 14px 10px 38px;
+  border: 1px solid var(--border-strong);
+  border-radius: 6px;
+  font-size: 14px;
+  background: var(--bg-code) url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><circle cx='11' cy='11' r='8'/><path d='m21 21-4.3-4.3'/></svg>") no-repeat 12px center;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.search-bar input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(37,99,235,0.12);
+  background-color: #fff;
+}
+.search-bar .filters {
+  display: flex;
+  gap: 6px;
+  margin-top: 10px;
+  flex-wrap: wrap;
+}
+.search-bar .filter-btn {
+  padding: 4px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--border-strong);
+  background: #fff;
+  color: var(--text-muted);
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.search-bar .filter-btn:hover { border-color: var(--accent); color: var(--accent); }
+.search-bar .filter-btn.active {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+.search-bar .result-count {
+  margin-left: auto;
+  color: var(--text-muted);
+  font-size: 12px;
+  align-self: center;
+}
+
+/* LAYOUT */
+.layout {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  gap: 0;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* SIDEBAR */
+.sidebar {
+  background: var(--bg-sidebar);
+  color: var(--text-sidebar);
+  padding: 20px 0;
+  position: sticky;
+  top: 140px;
+  height: calc(100vh - 140px);
+  overflow-y: auto;
+  border-right: 1px solid #0f172a;
+}
+.sidebar h3 {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-sidebar-muted);
+  padding: 8px 20px 6px;
+  font-weight: 600;
+}
+.sidebar a {
+  display: block;
+  padding: 7px 20px;
+  color: var(--text-sidebar);
+  font-size: 13px;
+  border-left: 3px solid transparent;
+  transition: all 0.15s;
+}
+.sidebar a:hover {
+  background: var(--bg-sidebar-hover);
+  border-left-color: var(--accent);
+  text-decoration: none;
+}
+.sidebar a.active {
+  background: var(--bg-sidebar-hover);
+  border-left-color: var(--accent);
+}
+.sidebar .cat-group {
+  margin-bottom: 6px;
+}
+
+/* MAIN CONTENT */
+main {
+  padding: 24px 28px 80px;
+  min-width: 0; /* allow grid to shrink */
+}
+
+/* INTRO */
+.intro {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 20px 24px;
+  margin-bottom: 24px;
+  box-shadow: var(--shadow-sm);
+}
+.intro h2 {
+  font-size: 18px;
+  margin-bottom: 8px;
+  color: var(--text);
+}
+.intro p {
+  color: var(--text-muted);
+  font-size: 13px;
+  margin-bottom: 8px;
+}
+.intro ul {
+  margin: 8px 0 0 20px;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+.intro code {
+  background: var(--bg-code);
+  padding: 1px 6px;
+  border-radius: 3px;
+  font-family: "SF Mono", Monaco, Consolas, "Courier New", monospace;
+  font-size: 12px;
+  color: var(--accent);
+}
+
+/* ENTRIES */
+.entry {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  margin-bottom: 20px;
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow 0.15s;
+}
+.entry:hover { box-shadow: var(--shadow); }
+
+.entry-header {
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+.entry-code {
+  display: inline-block;
+  font-family: "SF Mono", Monaco, Consolas, monospace;
+  font-weight: 700;
+  font-size: 13px;
+  padding: 4px 10px;
+  border-radius: 4px;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.severity-info .entry-code { background: var(--severity-info-bg); color: var(--severity-info); border: 1px solid #67e8f9; }
+.severity-warning .entry-code { background: var(--severity-warning-bg); color: var(--severity-warning); border: 1px solid #fcd34d; }
+.severity-critical .entry-code { background: var(--severity-critical-bg); color: var(--severity-critical); border: 1px solid #fca5a5; }
+
+.entry-title-block { flex: 1; min-width: 0; }
+.entry-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 2px;
+}
+.entry-category {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.entry-body { padding: 16px 20px; }
+
+.entry-section { margin-bottom: 16px; }
+.entry-section:last-child { margin-bottom: 0; }
+.entry-section h4 {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  font-weight: 600;
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.entry-section h4::before {
+  content: "";
+  display: inline-block;
+  width: 3px;
+  height: 12px;
+  background: var(--accent);
+  border-radius: 1px;
+}
+
+.entry-section p { font-size: 13px; color: var(--text); line-height: 1.65; }
+.entry-section ul { margin: 4px 0 0 18px; }
+.entry-section ul li { font-size: 13px; color: var(--text); margin-bottom: 4px; line-height: 1.6; }
+
+/* CODE BLOCK */
+pre.message-block {
+  background: var(--bg-code-dark);
+  color: #e2e8f0;
+  padding: 12px 16px;
+  border-radius: 6px;
+  font-family: "SF Mono", Monaco, Consolas, "Courier New", monospace;
+  font-size: 12px;
+  line-height: 1.55;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  border-left: 3px solid var(--accent);
+}
+pre.message-block .placeholder {
+  color: #fbbf24;
+  font-weight: 600;
+}
+
+/* TAGS */
+.tag-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.tag {
+  display: inline-block;
+  background: var(--bg-code);
+  color: var(--text-muted);
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 3px;
+  font-family: "SF Mono", Monaco, Consolas, monospace;
+  border: 1px solid var(--border);
+}
+
+/* CASES TABLE */
+.cases-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+  margin-top: 4px;
+}
+.cases-table th {
+  text-align: left;
+  background: var(--bg-code);
+  padding: 6px 10px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-size: 10px;
+  border-bottom: 1px solid var(--border);
+}
+.cases-table td {
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+}
+.cases-table tr:last-child td { border-bottom: none; }
+.cases-table tr:hover td { background: #fafbfc; }
+.cases-table .td-date { white-space: nowrap; font-family: monospace; color: var(--text-muted); }
+.cases-table .td-ticket { font-family: monospace; color: var(--accent); white-space: nowrap; }
+.cases-table .td-job { font-family: monospace; }
+
+/* NO RESULTS */
+.no-results {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--text-muted);
+}
+.no-results .icon { font-size: 48px; margin-bottom: 12px; opacity: 0.4; }
+
+/* SEVERITY BADGE */
+.severity-badge {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 2px 8px;
+  border-radius: 3px;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+.severity-info .severity-badge { background: var(--severity-info-bg); color: var(--severity-info); }
+.severity-warning .severity-badge { background: var(--severity-warning-bg); color: var(--severity-warning); }
+.severity-critical .severity-badge { background: var(--severity-critical-bg); color: var(--severity-critical); }
+
+/* RESPONSIVE */
+@media (max-width: 900px) {
+  .layout { grid-template-columns: 1fr; }
+  .sidebar { display: none; }
+  .search-bar { top: 76px; }
+}
+
+/* SCROLLBAR */
+.sidebar::-webkit-scrollbar { width: 6px; }
+.sidebar::-webkit-scrollbar-track { background: transparent; }
+.sidebar::-webkit-scrollbar-thumb { background: #475569; border-radius: 3px; }
+pre::-webkit-scrollbar { height: 6px; }
+pre::-webkit-scrollbar-thumb { background: #475569; border-radius: 3px; }
+
+/* PRINT */
+@media print {
+  header, .search-bar, .sidebar { display: none; }
+  .layout { display: block; }
+  main { padding: 0; }
+  .entry { box-shadow: none; border: 1px solid #ccc; page-break-inside: avoid; }
+  .fab, .modal-overlay, .entry-actions { display: none !important; }
+}
+
+/* ============ FAB + NEW ENTRY BUTTON ============ */
+.btn-new-entry {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: background 0.15s, transform 0.1s;
+  white-space: nowrap;
+}
+.btn-new-entry:hover { background: var(--accent-hover); }
+.btn-new-entry:active { transform: scale(0.97); }
+.btn-new-entry svg { width: 14px; height: 14px; }
+
+.fab {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 6px 16px rgba(37,99,235,0.35);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 90;
+  transition: background 0.15s, transform 0.1s;
+}
+.fab:hover { background: var(--accent-hover); }
+.fab:active { transform: scale(0.95); }
+.fab svg { width: 26px; height: 26px; }
+@media (max-width: 600px) {
+  .btn-new-entry { display: none; }
+  .fab { display: flex; }
+}
+
+/* ============ CUSTOM ENTRY BADGE + ACTIONS ============ */
+.custom-badge {
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 1px 6px;
+  border-radius: 3px;
+  background: #ecfdf5;
+  color: #059669;
+  border: 1px solid #6ee7b7;
+  margin-left: 6px;
+  vertical-align: middle;
+}
+.entry-actions {
+  display: flex;
+  gap: 4px;
+  margin-left: 8px;
+  flex-shrink: 0;
+}
+.entry-action-btn {
+  background: transparent;
+  border: 1px solid var(--border-strong);
+  color: var(--text-muted);
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  cursor: pointer;
+  transition: all 0.15s;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+.entry-action-btn:hover { border-color: var(--accent); color: var(--accent); }
+.entry-action-btn.danger:hover { border-color: var(--severity-critical); color: var(--severity-critical); }
+.entry-action-btn svg { width: 12px; height: 12px; }
+
+/* ============ MODAL ============ */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15,23,42,0.6);
+  backdrop-filter: blur(2px);
+  z-index: 1000;
+  display: none;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 24px 16px;
+  overflow-y: auto;
+}
+.modal-overlay.open { display: flex; }
+.modal {
+  background: #fff;
+  border-radius: 10px;
+  width: 100%;
+  max-width: 720px;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.25);
+  margin: auto;
+  animation: modalIn 0.18s ease-out;
+}
+@keyframes modalIn {
+  from { opacity: 0; transform: translateY(-12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.modal-header {
+  padding: 18px 24px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.modal-header h2 { font-size: 17px; font-weight: 600; }
+.modal-header .modal-sub { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+.modal-close {
+  background: transparent;
+  border: none;
+  font-size: 22px;
+  color: var(--text-muted);
+  cursor: pointer;
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s;
+}
+.modal-close:hover { background: var(--bg-code); color: var(--text); }
+
+.modal-body {
+  padding: 20px 24px;
+  max-height: calc(100vh - 220px);
+  overflow-y: auto;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px 16px;
+}
+.form-grid .full { grid-column: 1 / -1; }
+
+.form-group { display: flex; flex-direction: column; gap: 4px; }
+.form-group label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.form-group label .req { color: var(--severity-critical); }
+.form-group .hint {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-weight: 400;
+}
+.form-group input[type="text"],
+.form-group input[type="date"],
+.form-group select,
+.form-group textarea {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid var(--border-strong);
+  border-radius: 5px;
+  font-size: 13px;
+  font-family: inherit;
+  background: #fff;
+  color: var(--text);
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.form-group textarea {
+  font-family: "SF Mono", Monaco, Consolas, "Courier New", monospace;
+  font-size: 12px;
+  resize: vertical;
+  line-height: 1.5;
+}
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(37,99,235,0.12);
+}
+.form-group textarea.tall { min-height: 100px; }
+.form-group textarea.medium { min-height: 70px; }
+.form-group.has-error input,
+.form-group.has-error select,
+.form-group.has-error textarea {
+  border-color: var(--severity-critical);
+  background: var(--severity-critical-bg);
+}
+.form-error {
+  font-size: 11px;
+  color: var(--severity-critical);
+  font-weight: 500;
+  display: none;
+}
+.form-group.has-error .form-error { display: block; }
+
+.severity-radio-group {
+  display: flex;
+  gap: 8px;
+}
+.severity-radio {
+  flex: 1;
+  position: relative;
+}
+.severity-radio input { position: absolute; opacity: 0; }
+.severity-radio label {
+  display: block;
+  padding: 8px 10px;
+  border: 1px solid var(--border-strong);
+  border-radius: 5px;
+  text-align: center;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  transition: all 0.15s;
+}
+.severity-radio input:checked + label {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+.severity-radio input:checked + label.sev-info { background: var(--severity-info); border-color: var(--severity-info); }
+.severity-radio input:checked + label.sev-warning { background: var(--severity-warning); border-color: var(--severity-warning); }
+.severity-radio input:checked + label.sev-critical { background: var(--severity-critical); border-color: var(--severity-critical); }
+
+.form-section {
+  border-top: 1px dashed var(--border);
+  padding-top: 14px;
+  margin-top: 14px;
+}
+.form-section-title {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  margin-bottom: 10px;
+}
+
+.modal-footer {
+  padding: 14px 24px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  background: var(--bg-code);
+  border-radius: 0 0 10px 10px;
+}
+.modal-footer .left-note {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+.modal-footer .actions { display: flex; gap: 8px; }
+.btn-secondary {
+  background: #fff;
+  color: var(--text);
+  border: 1px solid var(--border-strong);
+  padding: 8px 16px;
+  border-radius: 5px;
+  font-size: 13px;
+  cursor: pointer;
+  font-weight: 500;
+}
+.btn-secondary:hover { background: var(--bg-code); }
+.btn-primary {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  padding: 8px 18px;
+  border-radius: 5px;
+  font-size: 13px;
+  cursor: pointer;
+  font-weight: 600;
+}
+.btn-primary:hover { background: var(--accent-hover); }
+.btn-primary:disabled {
+  background: var(--text-muted);
+  cursor: not-allowed;
+}
+
+@media (max-width: 600px) {
+  .form-grid { grid-template-columns: 1fr; }
+  .modal-body { padding: 16px; }
+  .modal-header, .modal-footer { padding: 14px 16px; }
+}
+
+/* ============ TOAST ============ */
+.toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #1e293b;
+  color: #fff;
+  padding: 10px 18px;
+  border-radius: 6px;
+  font-size: 13px;
+  box-shadow: var(--shadow);
+  z-index: 1100;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s, transform 0.2s;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(-4px); }
+.toast.success { background: #059669; }
+.toast.error { background: var(--severity-critical); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-row">
+    <div>
+      <h1>Wiki MSGW — AS400 / JDE Edwards</h1>
+      <div class="subtitle">Base de conocimiento de mensajes en espera (Message Waiting) — Pinot / Semillón / Backups</div>
+    </div>
+    <div class="meta" style="display:flex; align-items:center; gap:14px;">
+      <button class="btn-new-entry" id="btnNewEntry">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+        Nueva entrada
+      </button>
+      <div>
+        <div>16 mensajes base</div>
+        <div>Última actualización: 2026-07-15</div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="search-bar">
+  <input type="text" id="searchInput" placeholder="Buscar por código (RNX1221), mensaje, programa, archivo o job…" autocomplete="off">
+  <div class="filters">
+    <button class="filter-btn active" data-filter="all">Todos</button>
+    <button class="filter-btn" data-filter="Errores de Archivo / Operación">Errores de Archivo / Operación</button><button class="filter-btn" data-filter="Stream File / Entidades">Stream File / Entidades</button><button class="filter-btn" data-filter="Errores de Fecha / Hora">Errores de Fecha / Hora</button><button class="filter-btn" data-filter="Errores de Acceso / IFS">Errores de Acceso / IFS</button><button class="filter-btn" data-filter="Errores de Array / Índice">Errores de Array / Índice</button><button class="filter-btn" data-filter="Backups">Backups</button><button class="filter-btn" data-filter="Jobs de Chequeo / Batch">Jobs de Chequeo / Batch</button><button class="filter-btn" data-filter="Procedimientos Especiales">Procedimientos Especiales</button>
+    <span class="result-count" id="resultCount"></span>
+  </div>
+</div>
+
+<div class="layout">
+  <aside class="sidebar">
+    <h3>Categorías</h3>
+    <div class="cat-group"><h3 style="font-size:10px;color:#94a3b8;padding:8px 20px 4px;text-transform:uppercase;letter-spacing:0.08em;">Errores de Archivo / Operación</h3><a href="#" data-target="RNX1221">RNX1221 — Actualización o supresión en archivo sin…</a><a href="#" data-target="CPF4131">CPF4131 — Error de nivel en archivo (open falla po…</a><a href="#" data-target="CPF4103">CPF4103 — Dispositivo *REQUESTER no encontrado al …</a><a href="#" data-target="RNX1021">RNX1021 — Clave de registro duplicada (intento de …</a></div><div class="cat-group"><h3 style="font-size:10px;color:#94a3b8;padding:8px 20px 4px;text-transform:uppercase;letter-spacing:0.08em;">Stream File / Entidades</h3><a href="#" data-target="MSG0008">MSG0008 — Stream file not found or not accessible …</a></div><div class="cat-group"><h3 style="font-size:10px;color:#94a3b8;padding:8px 20px 4px;text-transform:uppercase;letter-spacing:0.08em;">Errores de Fecha / Hora</h3><a href="#" data-target="RNX0114">RNX0114 — Año fuera de rango (1940–2039) en valor …</a></div><div class="cat-group"><h3 style="font-size:10px;color:#94a3b8;padding:8px 20px 4px;text-transform:uppercase;letter-spacing:0.08em;">Errores de Acceso / IFS</h3><a href="#" data-target="CPFA0B1">CPFA0B1 — No se permite la operación solicitada. P…</a></div><div class="cat-group"><h3 style="font-size:10px;color:#94a3b8;padding:8px 20px 4px;text-transform:uppercase;letter-spacing:0.08em;">Errores de Array / Índice</h3><a href="#" data-target="RNX0122">RNX0122 — El valor OCCUR está fuera de rango (índi…</a><a href="#" data-target="MCH1210">MCH1210 — El valor receptor es demasiado pequeño p…</a><a href="#" data-target="X55SCP02">X55SCP02 — El índice de la matriz en X55SCP02 no es…</a></div><div class="cat-group"><h3 style="font-size:10px;color:#94a3b8;padding:8px 20px 4px;text-transform:uppercase;letter-spacing:0.08em;">Backups</h3><a href="#" data-target="CPF377F">CPF377F — Backup Semillón: la operación de salvar …</a></div><div class="cat-group"><h3 style="font-size:10px;color:#94a3b8;padding:8px 20px 4px;text-transform:uppercase;letter-spacing:0.08em;">Jobs de Chequeo / Batch</h3><a href="#" data-target="BCHAGENTES-MSGW">BCHAGENTES-MSGW — BCHAGENTES en estado MSGW (job batch de …</a><a href="#" data-target="CHK-MSGW">CHK-MSGW — Jobs de chequeo (CHKMANAGER / CHKBCHAGEN…</a><a href="#" data-target="JCAINDLIQ-MSGW">JCAINDLIQ-MSGW — JCAINDLIQ_ en MSGW (jobs del perfil UDES…</a></div><div class="cat-group"><h3 style="font-size:10px;color:#94a3b8;padding:8px 20px 4px;text-transform:uppercase;letter-spacing:0.08em;">Procedimientos Especiales</h3><a href="#" data-target="SNDF-AR-P1">SNDF-AR-P1 — Procedimiento especial: jobs Sx/Fx con k…</a><a href="#" data-target="UNZIPJRNL">UNZIPJRNL — Error en job UNZIPJRNL (procedimiento de…</a></div>
+  </aside>
+
+  <main>
+    <div class="intro">
+      <h2>Cómo usar esta wiki</h2>
+      <p>Buscá por código de mensaje (ej: <code>RNX1221</code>), por texto del mensaje (<code>Stream file not found</code>), por programa (<code>PTRF15002</code>) o por nombre de job. Los filtros te dejan acotar por categoría.</p>
+      <p>Cada entrada incluye:</p>
+      <ul>
+        <li><strong>Mensaje completo</strong> tal cual aparece en el job log del AS400.</li>
+        <li><strong>Causa</strong> del error y por qué se dispara.</li>
+        <li><strong>Programas y archivos</strong> involucrados.</li>
+        <li><strong>Resolución</strong> con los pasos exactos a contestar al job (C / G / D / I / R).</li>
+        <li><strong>Casos documentados</strong> con fecha, ticket y acción tomada.</li>
+      </ul>
+    </div>
+
+    <div id="entriesContainer">
+      
+    </div>
+
+    <div class="no-results" id="noResults" style="display:none;">
+      <div class="icon">⚠</div>
+      <h3>Sin resultados</h3>
+      <p>No se encontraron mensajes que coincidan con tu búsqueda.</p>
+    </div>
+  </main>
+</div>
+
+<!-- FAB para mobile -->
+<button class="fab" id="fabNewEntry" title="Nueva entrada">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+</button>
+
+<!-- MODAL: Crear / Editar entrada -->
+<div class="modal-overlay" id="entryModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <h2 id="modalTitle">Nueva entrada MSGW</h2>
+        <div class="modal-sub">Los campos marcados con <span style="color:#dc2626;font-weight:700;">*</span> son obligatorios.</div>
+      </div>
+      <button class="modal-close" id="modalClose" title="Cerrar">×</button>
+    </div>
+    <form id="entryForm" novalidate>
+      <div class="modal-body">
+        <!-- SECCIÓN 1: Datos principales -->
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="f_id">Código del mensaje <span class="req">*</span></label>
+            <input type="text" id="f_id" name="id" placeholder="Ej: RNX1234, CPF9876, MSG0001" required maxlength="40">
+            <span class="hint">Identificador único (sin espacios).</span>
+            <span class="form-error">El código es obligatorio.</span>
+          </div>
+          <div class="form-group">
+            <label for="f_severity">Severidad <span class="req">*</span></label>
+            <div class="severity-radio-group">
+              <div class="severity-radio">
+                <input type="radio" id="sev_info" name="severity" value="info">
+                <label for="sev_info" class="sev-info">Info</label>
+              </div>
+              <div class="severity-radio">
+                <input type="radio" id="sev_warning" name="severity" value="warning" checked>
+                <label for="sev_warning" class="sev-warning">Warning</label>
+              </div>
+              <div class="severity-radio">
+                <input type="radio" id="sev_critical" name="severity" value="critical">
+                <label for="sev_critical" class="sev-critical">Critical</label>
+              </div>
+            </div>
+          </div>
+          <div class="form-group full">
+            <label for="f_title">Título <span class="req">*</span></label>
+            <input type="text" id="f_title" name="title" placeholder="Descripción corta del mensaje (ej: 'Stream file not found')" required maxlength="120">
+            <span class="form-error">El título es obligatorio.</span>
+          </div>
+          <div class="form-group">
+            <label for="f_category">Categoría <span class="req">*</span></label>
+            <select id="f_category" name="category" required>
+              <option value="">— Seleccionar —</option>
+              <option value="Errores de Archivo / Operación">Errores de Archivo / Operación</option>
+              <option value="Stream File / Entidades">Stream File / Entidades</option>
+              <option value="Errores de Fecha / Hora">Errores de Fecha / Hora</option>
+              <option value="Errores de Array / Índice">Errores de Array / Índice</option>
+              <option value="Errores de Acceso / IFS">Errores de Acceso / IFS</option>
+              <option value="Backups">Backups</option>
+              <option value="Jobs de Chequeo / Batch">Jobs de Chequeo / Batch</option>
+              <option value="Procedimientos Especiales">Procedimientos Especiales</option>
+              <option value="__new__">+ Otra (escribir nombre…)</option>
+            </select>
+            <span class="form-error">La categoría es obligatoria.</span>
+          </div>
+          <div class="form-group" id="f_category_new_group" style="display:none;">
+            <label for="f_category_new">Nueva categoría <span class="req">*</span></label>
+            <input type="text" id="f_category_new" name="category_new" placeholder="Nombre de la nueva categoría" maxlength="60">
+            <span class="form-error">Ingresá el nombre de la categoría.</span>
+          </div>
+        </div>
+
+        <!-- SECCIÓN 2: Mensaje y causa -->
+        <div class="form-section">
+          <div class="form-section-title">Mensaje y causa</div>
+          <div class="form-grid">
+            <div class="form-group full">
+              <label for="f_message">Mensaje completo <span class="req">*</span></label>
+              <textarea id="f_message" name="message" class="tall" required placeholder="Pegá acá el texto tal cual aparece en el job log del AS400. Usá {MIEMBRO}, {PROGRAMA} para marcar variables."></textarea>
+              <span class="hint">Tip: usá <code style="background:#f1f5f9;padding:1px 4px;border-radius:3px;">{MIEMBRO}</code> para marcar variables.</span>
+              <span class="form-error">El mensaje es obligatorio.</span>
+            </div>
+            <div class="form-group full">
+              <label for="f_cause">Causa <span class="req">*</span></label>
+              <textarea id="f_cause" name="cause" class="medium" required placeholder="Explicá por qué se dispara este error y en qué contexto."></textarea>
+              <span class="form-error">La causa es obligatoria.</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECCIÓN 3: Programas y archivos -->
+        <div class="form-section">
+          <div class="form-section-title">Programas y archivos involucrados (opcional)</div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="f_programs">Programas</label>
+              <input type="text" id="f_programs" name="programs" placeholder="Separados por coma: P57608, PTRFSTY@J">
+              <span class="hint">Separar por coma.</span>
+            </div>
+            <div class="form-group">
+              <label for="f_files">Archivos</label>
+              <input type="text" id="f_files" name="files" placeholder="Separados por coma: F57607LE, F550040B">
+              <span class="hint">Separar por coma.</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECCIÓN 4: Resolución -->
+        <div class="form-section">
+          <div class="form-section-title">Resolución</div>
+          <div class="form-group">
+            <label for="f_resolution">Pasos de resolución <span class="req">*</span></label>
+            <textarea id="f_resolution" name="resolution" class="tall" required placeholder="Un paso por línea. Ej:&#10;Responder con G (continuar).&#10;Luego responder con C cuando aparezca el segundo mensaje.&#10;Si se repite, llamar a Ricardo Caldeiro."></textarea>
+            <span class="hint">Un paso por línea.</span>
+            <span class="form-error">La resolución es obligatoria.</span>
+          </div>
+        </div>
+
+        <!-- SECCIÓN 5: Caso documentado (opcional) -->
+        <div class="form-section">
+          <div class="form-section-title">Caso documentado (opcional)</div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="f_case_date">Fecha</label>
+              <input type="date" id="f_case_date" name="case_date">
+            </div>
+            <div class="form-group">
+              <label for="f_case_ticket">Ticket</label>
+              <input type="text" id="f_case_ticket" name="case_ticket" placeholder="Ej: SR0186562, INC 0041043">
+            </div>
+            <div class="form-group">
+              <label for="f_case_job">Job / Número</label>
+              <input type="text" id="f_case_job" name="case_job" placeholder="Ej: FE90069999 / 237277">
+            </div>
+            <div class="form-group">
+              <label for="f_case_action">Acción tomada</label>
+              <input type="text" id="f_case_action" name="case_action" placeholder="Ej: G + C, finalizó normalmente.">
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <div class="left-note">La entrada se guarda en este navegador (localStorage).</div>
+        <div class="actions">
+          <button type="button" class="btn-secondary" id="modalCancel">Cancelar</button>
+          <button type="submit" class="btn-primary" id="modalSave">Guardar entrada</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// Datos base serializados (los que venían con la wiki)
+const BASE_ENTRIES = [
+  {
+    "id": "RNX1221",
+    "title": "Actualización o supresión en archivo sin operación de entrada previa",
+    "category": "Errores de Archivo / Operación",
+    "severity": "warning",
+    "message": "La secuencia de operación para el miembro {MIEMBRO} no es válida. (C I)\nActualización o supresión en el archivo {MIEMBRO} sin operación de entrada previa.\nError de función. RNX1221 no supervisado por {PROGRAMA} en la sentencia {SENTENCIA}, instrucción X'0000'.\nActualización o supresión en el archivo {MIEMBRO} sin operación de entrada previa (C G D F).",
+    "cause": "El programa RPG intenta actualizar (UPDATE) o borrar (DELETE) un registro sin haber ejecutado antes una operación de lectura (READ, CHAIN, READE) exitosa sobre ese archivo. Es un error de lógica del programa, normalmente disparado por un dato que no cumple las precondiciones esperadas (registro inexistente, key no encontrada, etc.). Suele precederse del mensaje \"La secuencia de operación para el miembro X no es válida\".",
+    "programs": [
+      "P57608",
+      "PTRFSTY@J"
+    ],
+    "files": [
+      "F57607LE",
+      "F550040B",
+      "F550050JBB"
+    ],
+    "resolution": [
+      "Responder con G (continuar) — el job finaliza normalmente.",
+      "En algunos casos puntuales puede requerirse C (cancelar) si el ciclo quedó en loop.",
+      "Si el mensaje se repite sistemáticamente para el mismo job/entidad, llamar a Ricardo Caldeiro porque indica un problema de datos."
+    ],
+    "cases": [
+      {
+        "date": "2026-07-15",
+        "ticket": "INC 0041043",
+        "job": "BCHAGENTES / 631095",
+        "action": "Se llamó a Ricardo Caldeiro, indicó contestar con G. Finalizó normalmente."
+      },
+      {
+        "date": "2026-03-03",
+        "ticket": "SR0177063",
+        "job": "S5826000C_ / 558221",
+        "action": "Contestado con G, finalizó normalmente."
+      },
+      {
+        "date": "2026-02-12",
+        "ticket": "SR0175500",
+        "job": "S5826000C_ / 300543",
+        "action": "Contestado con G, finalizó normalmente."
+      },
+      {
+        "date": "2026-02-10",
+        "ticket": "SR0175326",
+        "job": "S5826000C_ / 907001",
+        "action": "Contestado con G, finalizó normalmente."
+      },
+      {
+        "date": "2026-02-04",
+        "ticket": "SR0174927",
+        "job": "S5826000C_ / 809537",
+        "action": "Contestado con G, finalizó normalmente."
+      },
+      {
+        "date": "2025-08-14",
+        "ticket": "SR0160122",
+        "job": "S5826000C_ / 853581",
+        "action": "Contestado con G, finalizó normalmente."
+      }
+    ]
+  },
+  {
+    "id": "MSG0008",
+    "title": "Stream file not found or not accessible (entidad no encontrada)",
+    "category": "Stream File / Entidades",
+    "severity": "warning",
+    "message": "SNDPGMMSG MSGID(MSG0008) MSGF(*LIBL/MMAILV4R5) MSGDTA('/home/com/sibs/sepsa/DataProd/Utilityftp/@nnnnnnnnC/ARCHIVO.ext') TOPGMQ(*PRV) MSGTYPE('*ESCAPE')\nStream file /home/com/sibs/sepsa/DataProd/Utilityftp/@nnnnnnnnC/ARCHIVO.ext not found or not accessible.\nError de función. MSG0008 no supervisado por EMLSTMF en la sentencia 0000047200, instrucción X'0000'.\nLa llamada a STREMLSPL1 ha finalizado con error (C G D F).",
+    "cause": "El job de envío de entidad (jobs que comienzan con FE seguido de números: FE80050001, FE80050002, FE90069999, FE15650001) intenta leer un stream file (.txt / .dat) en el path de Utilityftp que no existe o no es accesible. Ocurre cuando la entidad llegó al AS400 pero el archivo de salida no se generó, se borró, o el nombre esperado no coincide con el archivo real.",
+    "programs": [
+      "EMLSTMF",
+      "STREMLSPL1"
+    ],
+    "files": [
+      "Stream files en /home/com/sibs/sepsa/DataProd/Utilityftp/"
+    ],
+    "resolution": [
+      "Responder con G (continuar con la siguiente instrucción).",
+      "Luego responder con C cuando aparece el segundo mensaje.",
+      "El job finaliza normalmente.",
+      "POSTERIORMENTE: reenviar la entidad desde el origen (JDE / aplicación emisora) para que se regenere el stream file.",
+      "Verificar permisos del directorio si el archivo existe pero no es accesible."
+    ],
+    "cases": [
+      {
+        "date": "2026-07-07",
+        "ticket": "SR0186562",
+        "job": "FE90069999 / 237277",
+        "action": "G + C, finalizó normalmente. Se reenvió la entidad."
+      },
+      {
+        "date": "2026-07-03",
+        "ticket": "SR0186357",
+        "job": "FE80050001 / 54341",
+        "action": "G + C, finalizó normalmente. Se enviaron las entidades."
+      },
+      {
+        "date": "2026-06-12",
+        "ticket": "SR0184797",
+        "job": "FE80050002 / 822343",
+        "action": "G + C, finalizó normalmente. Se envió la entidad."
+      },
+      {
+        "date": "2026-05-20",
+        "ticket": "SR0281878",
+        "job": "FE80050002 / 590962",
+        "action": "G + C, finalizó normalmente. Se envió la entidad."
+      },
+      {
+        "date": "2026-03-06",
+        "ticket": "SR0177378",
+        "job": "FE80050001 / 128758",
+        "action": "G + C, se reenvió la entidad."
+      },
+      {
+        "date": "2026-02-06",
+        "ticket": "SR0175114",
+        "job": "FE80050001 / 197668",
+        "action": "G + C, se reenvió la entidad."
+      },
+      {
+        "date": "2026-02-05",
+        "ticket": "SR0175021",
+        "job": "FE80050001 / 3633",
+        "action": "G + C, se reenvió la entidad."
+      },
+      {
+        "date": "2026-02-03",
+        "ticket": "SR0174803",
+        "job": "FE15650001 / 627832",
+        "action": "G, finalizó normalmente."
+      },
+      {
+        "date": "2025-12-19",
+        "ticket": "SR0171903",
+        "job": "FE80050002 / 823758",
+        "action": "G + C, se reenviaron las entidades."
+      },
+      {
+        "date": "2025-11-18",
+        "ticket": "SR0169772",
+        "job": "FE80050001 / 724095",
+        "action": "G + C, se reenvió la entidad."
+      },
+      {
+        "date": "2025-11-04",
+        "ticket": "SR0168606",
+        "job": "FE90069999 / 142792",
+        "action": "G + C, se reenvió la entidad."
+      },
+      {
+        "date": "2025-07-30",
+        "ticket": "SR0158990",
+        "job": "FE80050001 / 387287",
+        "action": "G + C, se reenvió la entidad."
+      },
+      {
+        "date": "2025-07-25",
+        "ticket": "SR0158723",
+        "job": "FE80050001 / 409512",
+        "action": "G + C, finalizó normalmente."
+      },
+      {
+        "date": "2022-02-15",
+        "ticket": "INC 0026292",
+        "job": "FE80050002 / 419484",
+        "action": "G + C, finalizó normalmente."
+      }
+    ]
+  },
+  {
+    "id": "CPF4131",
+    "title": "Error de nivel en archivo (open falla por mismatch de nivel)",
+    "category": "Errores de Archivo / Operación",
+    "severity": "critical",
+    "message": "Error de nivel en el archivo F57601V$ de la biblioteca SEPDTAPRD con miembro F57601V$.\nHa aparecido el mensaje de error CPF4131 durante OPEN para el archivo F57601V$.\nError de función. RNX1216 no supervisado por PTRF15002 en la sentencia 2100000001, instrucción X'0000'.\nHa aparecido el mensaje de error CPF4131 durante OPEN para el archivo F57601V$ (C S D F).",
+    "cause": "El archivo físico F57601V$ cambió de nivel (se recompiló o reorganizó) y los programas que lo usan (PTRF15002) fueron compilados contra una versión anterior. El OPEN falla porque el formato del registro esperado por el programa no coincide con el formato actual del archivo. Suele pasar después de un deploy o recompilación incompleta. IMPORTANTE: mientras el job quede en MSGW con este error, el proceso P1 de Pinot queda FRENADO.",
+    "programs": [
+      "PTRF15002",
+      "JTRF15002"
+    ],
+    "files": [
+      "F57601V$",
+      "F57601V$ en SEPDTAPRD"
+    ],
+    "resolution": [
+      "PASO 1: Ejecutar WRKKEYJOB y localizar la key del job (formato: SNDF$AR_P1 nnnnnnnn A CALL PGM(*LIBL/JTRF15002) PARM(...)).",
+      "PASO 2: Cancelar el job (option 4 desde WRKJOB o ENDJOB).",
+      "PASO 3: Volver a ejecutar WRKKEYJOB y verificar que la key YA NO esté presente.",
+      "PASO 4: Si la key sigue existiendo, ELIMINARLA manualmente — de lo contrario el P1 continuará frenado.",
+      "PASO 5: Llamar a Ricardo Caldeiro para recompilar PTRF15002 contra el nivel actual de F57601V$.",
+      "NO responder con C/G/D/F directamente — el job va a seguir tirando el mismo error y el P1 queda colgado."
+    ],
+    "cases": [
+      {
+        "date": "2026-05-20",
+        "ticket": "INC0040283",
+        "job": "S150020C__ / 571346",
+        "action": "Se canceló el job, se controló con WRKKEYJOB que la key ya no estaba. Escalado a Ricardo Caldeiro."
+      },
+      {
+        "date": "2026-05-20",
+        "ticket": "SR0281878",
+        "job": "S150020C__ / 571346",
+        "action": "Cancelado + verificación de key."
+      }
+    ]
+  },
+  {
+    "id": "CPF4103",
+    "title": "Dispositivo *REQUESTER no encontrado al abrir archivo",
+    "category": "Errores de Archivo / Operación",
+    "severity": "warning",
+    "message": "No se ha encontrado el dispositivo *REQUESTER mientras se abría el archivo V5576A13 en la biblioteca AR_CLTOBJ.\nHa aparecido el mensaje de error CPF4103 durante OPEN para el archivo V5576A13.\nError de función. RNX1216 no supervisado por P5576A13 en la sentencia 0001000001, instrucción X'0000'.\nHa aparecido el mensaje de error CPF4103 durante OPEN para el archivo V5576A13 (C S D F).",
+    "cause": "El programa P5576A13 intenta abrir el archivo V5576A13 con dispositivo *REQUESTER, pero el job batch no tiene asignado un dispositivo interactivo (porque se ejecuta en cola BCH sin terminal asociado). Es típico de jobs JDE que se corren como batch pero fueron diseñados para uso interactivo.",
+    "programs": [
+      "P5576A13"
+    ],
+    "files": [
+      "V5576A13 en AR_CLTOBJ"
+    ],
+    "resolution": [
+      "Revisar si el job debería enviarse a una cola interactiva o si falta un override.",
+      "Llamar a Ricardo Caldeiro — el problema es de configuración del job, no de datos.",
+      "Como acción inmediata puede cancelarse el job si está llenando el Outlook con mails."
+    ],
+    "cases": [
+      {
+        "date": "2026-07-03",
+        "ticket": "—",
+        "job": "J5576A0001 / 639423",
+        "action": "Detectado en Semillón. Escalado a operadores.it-solutions."
+      }
+    ]
+  },
+  {
+    "id": "RNX1021",
+    "title": "Clave de registro duplicada (intento de grabar registro ya existente)",
+    "category": "Errores de Archivo / Operación",
+    "severity": "warning",
+    "message": "Clave de registro duplicada en el miembro F5500401.\nNo se permite clave duplicada para el miembro F5500401. (C)\nIntento de grabar un registro duplicado en el archivo F5500401.\nError de función. RNX1021 no supervisado por PCOBCPY en la sentencia 0000000668, instrucción X'0000'.\nIntento de grabar un registro duplicado en el archivo F5500401 (C G D F).",
+    "cause": "El programa PCOBCPY (jobs de copia P1$nnCBCPY) intenta escribir (WRITE) un registro cuya clave ya existe en el archivo F5500401. Suele ocurrir cuando el proceso se relanza sin haber limpiado los registros de la corrida anterior, o cuando la lógica de copia duplica un registro intencionalmente pero la clave primaria no permite duplicados. Es un error esperado en jobs de copia P1 — la respuesta estándar es G.",
+    "programs": [
+      "PCOBCPY"
+    ],
+    "files": [
+      "F5500401",
+      "F5500402",
+      "F550040Z",
+      "F550040"
+    ],
+    "resolution": [
+      "Responder con G — el job finaliza normalmente.",
+      "Es un patrón recurrente en jobs P1$xxCBCPY; no requiere escalar salvo que se repite excesivamente (decenas de veces en una sola corrida).",
+      "Si la frecuencia aumenta, llamar a Ricardo Caldeiro para revisión de la lógica de copia."
+    ],
+    "cases": [
+      {
+        "date": "2025-12-20",
+        "ticket": "SR0171995",
+        "job": "P1$42CBCPY / 994331",
+        "action": "G, finalizó normalmente. Confirmado por Ricardo Caldeiro como respuesta correcta."
+      },
+      {
+        "date": "2022-03-10",
+        "ticket": "INC0026578",
+        "job": "P1$95CBCPY / 795910 y P1$97CBCPY / 795912",
+        "action": "G en ambos, finalizaron normalmente."
+      },
+      {
+        "date": "2022-02-22",
+        "ticket": "INC0026391",
+        "job": "P1$61CBCPY / 219869",
+        "action": "G, finalizó normalmente."
+      }
+    ]
+  },
+  {
+    "id": "RNX0114",
+    "title": "Año fuera de rango (1940–2039) en valor de fecha",
+    "category": "Errores de Fecha / Hora",
+    "severity": "warning",
+    "message": "Se ha modificado la propiedad del objeto UISVNC en QTEMP del tipo *USRIDX.\nLa parte correspondiente al año del valor de fecha o de indicación de la hora no está en el rango correcto.\nError de función. RNX0114 no supervisado por QRNXUTIL en la sentencia 0000000012, instrucción X'0000'.\nLa parte correspondiente al año de un valor de Fecha o de Indicación de la hora no está en el rango de 1940 a 2039 (C G D F).",
+    "cause": "El programa PTRF62602V (jobs S90063622C) recibe o calcula un valor de fecha cuyo componente de año cae fuera del rango válido del calendario RPG (1940–2039). Suele pasar por: dato de entrada corrupto, formato de fecha mal interpretado (DDMMYYYY vs YYYYMMDD), o campos numéricos con basura que se interpretan como año. El objeto UISVNC (USRIDX en QTEMP) se ve afectado como efecto secundario.",
+    "programs": [
+      "PTRF62602V",
+      "QRNXUTIL"
+    ],
+    "files": [
+      "UISVNC (*USRIDX en QTEMP)"
+    ],
+    "resolution": [
+      "Responder con G (continuar).",
+      "Luego responder con C cuando aparezca el segundo mensaje.",
+      "El job finaliza normalmente.",
+      "Si el error se repite para el mismo tipo de entidad, escalar para revisión del dato de entrada (probablemente la entidad trae una fecha inválida)."
+    ],
+    "cases": [
+      {
+        "date": "2026-07-09",
+        "ticket": "—",
+        "job": "S90063622C / 545395",
+        "action": "G + C, finalizó normalmente."
+      },
+      {
+        "date": "2026-04-16",
+        "ticket": "SR0180173",
+        "job": "S90063622C / 535100",
+        "action": "G + C, finalizó normalmente."
+      },
+      {
+        "date": "2025-11-19",
+        "ticket": "SR0169864",
+        "job": "S90063622C / 903111",
+        "action": "G + C, finalizó normalmente."
+      },
+      {
+        "date": "2025-08-14",
+        "ticket": "SR0160123",
+        "job": "S90063622C / 841367",
+        "action": "G + C, finalizó normalmente."
+      },
+      {
+        "date": "2025-07-22",
+        "ticket": "SR0158435",
+        "job": "S90063622C / 702659",
+        "action": "G + C, finalizó normalmente."
+      }
+    ]
+  },
+  {
+    "id": "CPFA0B1",
+    "title": "No se permite la operación solicitada. Problema de acceso (RMVLNK)",
+    "category": "Errores de Acceso / IFS",
+    "severity": "warning",
+    "message": "2994 - RMVLNK OBJLNK('/tmp/fec010p')\nNo se permite la operación solicitada. Problema de acceso.\nError de función. CPFA0B1 no supervisado por J5500$N21 en la sentencia 2994, instrucción X'0145'.\nJ5500$N21 ha recibido CPFA0B1 en la sentencia 2994. (C D I R)",
+    "cause": "El programa J5500$N21 intenta borrar un link del IFS (RMVLNK sobre /tmp/fec010p) y falla por permisos o porque el link no existe / está siendo usado por otro proceso. Es un error de cleanup — el job intenta limpiar un archivo temporario antes de procesar la siguiente entidad y no puede.",
+    "programs": [
+      "J5500$N21"
+    ],
+    "files": [
+      "/tmp/fec010p (IFS)"
+    ],
+    "resolution": [
+      "IMPORTANTE: este mensaje se repite varias veces seguidas.",
+      "Si se contesta con R (retry) el job vuelve a intentar y falla otra vez — NO USAR R.",
+      "Responder con D (dump + cancelar) para que finalice el job.",
+      "El job finaliza normalmente tras responder D.",
+      "Verificar permisos del directorio /tmp/ para el usuario del job (GCASTE) si el error se vuelve recurrente."
+    ],
+    "cases": [
+      {
+        "date": "2026-04-21",
+        "ticket": "SR0180450",
+        "job": "B1UPD@ECOM / 412411",
+        "action": "R no funcionó (sigue tirando el mismo mensaje). D → finalizó normalmente."
+      }
+    ]
+  },
+  {
+    "id": "RNX0122",
+    "title": "El valor OCCUR está fuera de rango (índice de array inválido)",
+    "category": "Errores de Array / Índice",
+    "severity": "warning",
+    "message": "No se ha encontrado el área de datos X0028 en *LIBL.\nSe ha modificado la propiedad del objeto X0028 en QTEMP del tipo *DTAARA.\nNo se permite la recurrencia para expresiones de tabla comunes.\nEl valor OCCUR está fuera de rango.\nError de función. RNX0122 no supervisado por P5500$RMN en la sentencia 0000003922, instrucción X'0000'.\nEl valor OCCUR está fuera de rango (C G D F).",
+    "cause": "El programa P5500$RMN accede a un elemento de un array (OCCUR en RPG) con un índice fuera de los límites definidos. Precede con falta del área de datos X0028 en *LIBL y un problema de recurrencia en CTE (expresiones de tabla comunes SQL). Es un problema de inicialización — el programa espera que X0028 exista en QTEMP y al no encontrarlo, los cálculos de índice se van de rango.",
+    "programs": [
+      "P5500$RMN"
+    ],
+    "files": [
+      "X0028 (*DTAARA en QTEMP)"
+    ],
+    "resolution": [
+      "Llamar a Ricardo Caldeiro — este error indica que el job no encontró un área de datos que debería estar inicializada por un paso previo.",
+      "Como acción inmediata: si el job está llenando el Outlook con mails, retenerlo (HLD) o cancelarlo hasta que Ricardo Caldeiro revise.",
+      "Verificar si el job que inicializa X0028 se ejecutó correctamente antes que éste."
+    ],
+    "cases": [
+      {
+        "date": "2026-07-01",
+        "ticket": "—",
+        "job": "T1$01RPTEN / 630018",
+        "action": "Detectado en Semillón, tirando mails constantes al Outlook. Escalado a operadores."
+      }
+    ]
+  },
+  {
+    "id": "MCH1210",
+    "title": "El valor receptor es demasiado pequeño para contener el resultado",
+    "category": "Errores de Array / Índice",
+    "severity": "warning",
+    "message": "El valor receptor es demasiado pequeño para contener el resultado.\nError de función. MCH1210 no supervisado por PTRF336B en la sentencia 0000002120, instrucción X'0000'.\nLa llamada a CREATEDETA ha finalizado con error (C G D F).",
+    "cause": "El programa PTRF336B hace una operación aritmética cuyo resultado excede el tamaño del campo receptor (overflow). El error ocurre dentro de la llamada a CREATEDETA — típicamente cuando se calcula un importe o cantidad que supera la capacidad del campo numérico definido. Suele ser un dato de entrada con valores extremos o un formato inesperado.",
+    "programs": [
+      "PTRF336B",
+      "CREATEDETA"
+    ],
+    "files": [],
+    "resolution": [
+      "Responder con G (continuar).",
+      "Luego responder con C cuando aparezca el segundo mensaje.",
+      "El job finaliza normalmente.",
+      "Si el error se repite para la misma entidad, llamar a Ricardo Caldeiro — probablemente el dato de entrada tenga un importe/cantidad inválido."
+    ],
+    "cases": [
+      {
+        "date": "2025-08-01",
+        "ticket": "SR0159220",
+        "job": "S33650003C / 823896",
+        "action": "G + C, finalizó normalmente."
+      }
+    ]
+  },
+  {
+    "id": "CPF377F",
+    "title": "Backup Semillón: la operación de salvar ha finalizado (sin checkpoint)",
+    "category": "Backups",
+    "severity": "critical",
+    "message": "Causa: El programa de lenguaje de control (CL) BKPDIASEM de la biblioteca QSYSOPR ha detectado un error en la sentencia número 9200. El texto del mensaje de CPF377F es: La operación de salvar ha finalizado. No es posible alcanzar el punto de comprobación.\nRecuperación: Este mensaje de consulta se puede evitar cambiando el programa. Supervise en busca de un error (mandato MONMSG) y lleve a cabo la recuperación de errores en el programa. Para continuar, elija un valor de respuesta.\nOpciones posibles de respuesta: C D I R.",
+    "cause": "El backup diario de Semillón (BKPDIASEM) falla al alcanzar el punto de comprobación (checkpoint) del SAVE. Las causas típicas son: archivos abiertos por otros jobs que impiden el lock exclusivo, espacio en cinta/disco insuficiente, o un job que está escribiendo activamente en algún objeto del backup. No es un error de datos, es de contención de recursos.",
+    "programs": [
+      "BKPDIASEM"
+    ],
+    "files": [],
+    "resolution": [
+      "Revisar las opciones que da el mensaje: C / D / I / R.",
+      "PRIMERA OPCIÓN: responder con R (retry) para que reintente la operación.",
+      "Si R falla: responder con I (ignore) — SOLO en Semillón, porque es entorno no productivo.",
+      "NO responder con C ni D salvo confirmación del analista (Omar Baldomir / Leonardo Cavalieri).",
+      "Si el perfil del operador no tiene nivel para hacer seguimiento, escalar a Omar o Leonardo.",
+      "Documentar en el mail cuál fue la respuesta final."
+    ],
+    "cases": [
+      {
+        "date": "2025-10-29",
+        "ticket": "—",
+        "job": "BKPDIASEM",
+        "action": "El perfil hmagar no tenía nivel para seguimiento. Escalado a Omar Baldomir, quien indicó: responder R (retry) o I (ignore) en Semillón."
+      }
+    ]
+  },
+  {
+    "id": "BCHAGENTES-MSGW",
+    "title": "BCHAGENTES en estado MSGW (job batch de agentes)",
+    "category": "Jobs de Chequeo / Batch",
+    "severity": "warning",
+    "message": "Trabajo: BCHAGENTES — Usuario: GCASTE — Estado: MSGW\nMensajes típicos: RNX1221 (secuencia de operación inválida para F57607LE) o mensajes similares a los jobs de polling.",
+    "cause": "El job BCHAGENTES es un job batch que procesa agentes. Cuando entra en MSGW, generalmente es por RNX1221 (actualización sin operación de entrada previa) sobre archivos F57607LE u otros del módulo de agentes. Verificar el mensaje específico con WRKJOB opción 10 (Display job log, if active, on-line, or by job).",
+    "programs": [
+      "P57608",
+      "X0901E"
+    ],
+    "files": [
+      "F57607LE"
+    ],
+    "resolution": [
+      "Hacer WRKJOB sobre el job en MSGW y ver el mensaje específico.",
+      "Si es RNX1221: responder con G (siguiendo el procedimiento de esa entrada).",
+      "Si es otro mensaje: buscarlo en esta wiki por código.",
+      "Llamar a Ricardo Caldeiro si el error se repite diariamente."
+    ],
+    "cases": [
+      {
+        "date": "2026-07-15",
+        "ticket": "INC 0041043",
+        "job": "BCHAGENTES / 631095",
+        "action": "Se llamó a Ricardo Caldeiro, indicó contestar con G. Finalizó normalmente."
+      },
+      {
+        "date": "2025-09-11",
+        "ticket": "—",
+        "job": "BCHAGENTES (chequeo CHKBCHAGEN)",
+        "action": "Job finaliza normalmente pero el chequeo CHKBCHAGEN queda en MSGW. Perfil sin nivel para seguimiento — escalar a Oscar Rodriguez."
+      }
+    ]
+  },
+  {
+    "id": "CHK-MSGW",
+    "title": "Jobs de chequeo (CHKMANAGER / CHKBCHAGEN / CHKBCHUTIL) en MSGW",
+    "category": "Jobs de Chequeo / Batch",
+    "severity": "info",
+    "message": "Jobs que monitorean otros jobs y quedan en MSGW cuando el job monitoreado genera un error no supervisado. Ejemplos:\n  CHKMANAGER   ORODRI   ASJ   PGM-CHKMANAGER   MSGW\n  CHKBCHAGEN   ORODRI   BCH   PGM-CHKJOBBCHW   MSGW\n  CHKBCHUTIL   ORODRI   BCH   PGM-CHKJOBBCHW   MSGW",
+    "cause": "Los jobs de chequeo (CHK*) son jobs watchdog que verifican el estado de otros jobs. Cuando el job monitoreado termina con un error que no fue supervisado (MONMSG), el chequeo queda en MSGW porque recibe el mensaje de escape. NO es un error del chequeo en sí — es un síntoma del job original. Perfil de operador estándar (hmagar) NO tiene nivel para hacer seguimiento de estos jobs.",
+    "programs": [
+      "CHKMANAGER",
+      "CHKJOBBCHW"
+    ],
+    "files": [],
+    "resolution": [
+      "Identificar qué job original generó el error (no el chequeo).",
+      "Hacer seguimiento del job original, no del CHK*.",
+      "Si el perfil no tiene nivel: escalar a Oscar Rodriguez o Leonardo Cavalieri.",
+      "Si el job original ya finalzó y solo quedó el chequeo en MSGW, suele bastar con responder C (cancelar) sobre el chequeo — es seguro porque solo era un watchdog."
+    ],
+    "cases": [
+      {
+        "date": "2026-06-09",
+        "ticket": "—",
+        "job": "CHKMANAGER / ORODRI y S5826002C_ / ZPOLLIN",
+        "action": "Perfil hmagar sin nivel. Escalado a Leonardo Cavalieri, quien corrigió el perfil igualándolo al de Humberto (YHNUNEZ)."
+      },
+      {
+        "date": "2025-09-11",
+        "ticket": "—",
+        "job": "CHKBCHAGEN y CHKBCHUTIL (usuario ORODRI)",
+        "action": "BCHAGENTES y BCH_UTIL finalizaron normalmente, pero los chequeos quedaron en MSGW. Escalado a Oscar Rodriguez."
+      }
+    ]
+  },
+  {
+    "id": "JCAINDLIQ-MSGW",
+    "title": "JCAINDLIQ_ en MSGW (jobs del perfil UDESAJDE en Semillón)",
+    "category": "Jobs de Chequeo / Batch",
+    "severity": "warning",
+    "message": "Múltiples jobs JCAINDLIQ_ ejecutados con el perfil UDESAJDE entran en MSGW y empiezan a enviar mails al Outlook.\n  JCAINDLIQ_  UDESAJDE  BCH  PGM-JCAINDLIQ  MSGW\n  JCAINDLIQ_  UDESAJDE  BCH  PGM-JCAINDLIQ  MSGW\n  JCAINDLIQ_  UDESAJDE  BCH  PGM-JCAINDLIQ  MSGW",
+    "cause": "Jobs del módulo de liquidación (JCAINDLIQ) ejecutados en Semillón con el perfil UDESAJDE. Cuando varios entran en MSGW a la vez saturan el Outlook del grupo operadores. La causa raíz del MSGW puede ser cualquiera de los errores RNX* documentados — hay que hacer WRKJOB sobre cada uno para ver el mensaje específico.",
+    "programs": [
+      "JCAINDLIQ"
+    ],
+    "files": [],
+    "resolution": [
+      "PASO 1: Hacer WRKJOB sobre cada job JCAINDLIQ_ en MSGW y anotar el mensaje.",
+      "PASO 2: Si son muchos jobs a la vez, RETENERLOS (HLD) primero para frenar el spam al Outlook.",
+      "PASO 3: Luego procesarlos uno por uno con la respuesta adecuada según el mensaje.",
+      "PASO 4: Si el volumen es alto, llamar a Ricardo Caldeiro — probablemente hay un problema de datos que afecta a todas las liquidaciones del lote."
+    ],
+    "cases": [
+      {
+        "date": "2026-07-06",
+        "ticket": "—",
+        "job": "3x JCAINDLIQ_ (UDESAJDE)",
+        "action": "Jobs en MSGW tirando mails al Outlook. Se retuvieron (HLD) para que no llenen el Outlook mientras se analiza."
+      }
+    ]
+  },
+  {
+    "id": "X55SCP02",
+    "title": "El índice de la matriz en X55SCP02 no es válido",
+    "category": "Errores de Array / Índice",
+    "severity": "warning",
+    "message": "DLTF FILE(QTEMP/SFTPOUT) → No se ha encontrado el objeto SFTPOUT en QTEMP de tipo *FILE.\nCRTPF FILE(QTEMP/SFTPOUT) RCDLEN(1000) → Archivo SFTPOUT creado.\nOVRDBF FILE(STDOUT) TOFILE(QTEMP/SFTPOUT)\nCALL PGM(X55SCP02)\nEl índice de la matriz en X55SCP02 en 1909 no es válido (C G S D F).",
+    "cause": "El programa X55SCP02 accede a un elemento de array con índice 1909, fuera de los límites definidos. El job crea un archivo SFTPOUT en QTEMP para capturar la salida STDOUT de un comando SFTP y luego procesa esa salida línea por línea usando un array. Si la salida del SFTP tiene más líneas de las esperadas, el índice se va de rango.",
+    "programs": [
+      "X55SCP02"
+    ],
+    "files": [
+      "SFTPOUT (QTEMP)"
+    ],
+    "resolution": [
+      "Responder con G (continuar).",
+      "Luego responder con C cuando aparezca el segundo mensaje.",
+      "El job finaliza normalmente.",
+      "Si el error es recurrente, escalar para revisar el tamaño del array en X55SCP02 — probablemente deba aumentarse el OCCUR máximo."
+    ],
+    "cases": [
+      {
+        "date": "2026-02-11",
+        "ticket": "SR0175419",
+        "job": "FS90063818 / 105261",
+        "action": "G + C, finalizó normalmente."
+      }
+    ]
+  },
+  {
+    "id": "SNDF-AR-P1",
+    "title": "Procedimiento especial: jobs Sx/Fx con key SNDF$AR_P1 (P1 frenado)",
+    "category": "Procedimientos Especiales",
+    "severity": "critical",
+    "message": "Jobs que comienzan con Fxnnnnnnnn o Sxnnnnnnnn (donde nnnnnnn son números) son entidades del P1 de Pinot. Si el mensaje tirado NO es uno de los comunes (MSG0008, RNX0114, etc.) sino un error RNX1216 sobre archivos F57601V$, el P1 queda FRENADO mientras el job siga en MSGW.\nKey típica en WRKKEYJOB:\n  SNDF$AR_P1 00000003  A  CALL PGM(*LIBL/JTRF15002) PARM('2026-05-202026-05-...')",
+    "cause": "Cuando un job de entidad del P1 queda en MSGW con un error no supervisado (típicamente CPF4131/RNX1216 sobre F57601V$), el mecanismo de keys del P1 mantiene registrada la transacción pendiente. Mientras esa key exista, el P1 no avanza con nuevas entidades del mismo tipo.",
+    "programs": [
+      "JTRF15002",
+      "PTRF15002"
+    ],
+    "files": [
+      "F57601V$"
+    ],
+    "resolution": [
+      "PASO 1: WRKKEYJOB sobre el job en MSGW.",
+      "PASO 2: Anotar la key completa (ej: SNDF$AR_P1 00000003 A CALL PGM(*LIBL/JTRF15002) PARM(...)).",
+      "PASO 3: Cancelar el job (ENDJOB).",
+      "PASO 4: Volver a ejecutar WRKKEYJOB y verificar que la key YA NO esté.",
+      "PASO 5: Si la key sigue → ELIMINARLA manualmente (opción 4 en WRKKEYJOB).",
+      "PASO 6: Confirmar con Ricardo Caldeiro antes de eliminar keys manualmente.",
+      "El P1 retomará el procesamiento normal una vez eliminada la key."
+    ],
+    "cases": [
+      {
+        "date": "2026-05-20",
+        "ticket": "INC0040283",
+        "job": "S150020C__ / 571346",
+        "action": "Procedimiento completo aplicado: cancelar job + verificar key + eliminar. P1 retomó normalmente."
+      }
+    ]
+  },
+  {
+    "id": "UNZIPJRNL",
+    "title": "Error en job UNZIPJRNL (procedimiento de descompresión de journals)",
+    "category": "Procedimientos Especiales",
+    "severity": "warning",
+    "message": "El job UNZIPJRNL entra en MSGW durante el procedimiento de descompresión de archivos de journal. Documentado en instructivo separado: \"Procedimiento UNZIPJRNL con MSGW.docx\".",
+    "cause": "El procedimiento UNZIPJRNL descomprime journals transferidos. El MSGW puede deberse a: archivo zip corrupto, espacio insuficiente en QTEMP, permisos sobre el directorio de origen, o un nombre de archivo que no cumple el patrón esperado.",
+    "programs": [
+      "UNZIPJRNL"
+    ],
+    "files": [],
+    "resolution": [
+      "Consultar el instructivo \"Procedimiento UNZIPJRNL con MSGW.docx\" (enviado a Anibal Rivero).",
+      "Si el perfil no tiene nivel para seguimiento, llamar a Ricardo Caldeiro.",
+      "Documentar el caso concreto y agregarlo a esta wiki una vez conocido el procedimiento detallado."
+    ],
+    "cases": [
+      {
+        "date": "2025-05-31",
+        "ticket": "—",
+        "job": "UNZIPJRNL",
+        "action": "Enviado instructivo a Anibal Rivero. Pendiente de documentación detallada del procedimiento."
+      }
+    ]
+  }
+];
+
+const STORAGE_KEY = 'msgw_wiki_custom_entries_v1';
+
+// ============ STORAGE: cargar / guardar entradas custom ============
+function loadCustomEntries() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch (err) {
+    console.error('Error leyendo entradas custom:', err);
+    return [];
+  }
+}
+
+function saveCustomEntries(entries) {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
+    return true;
+  } catch (err) {
+    console.error('Error guardando entradas custom:', err);
+    return false;
+  }
+}
+
+// Entradas custom cargadas en memoria
+let customEntries = loadCustomEntries();
+
+// Combinar base + custom para renderizado
+function getAllEntries() {
+  return BASE_ENTRIES.concat(customEntries);
+}
+
+// ============ HELPERS ============
+function escapeHtml(s) {
+  if (s == null) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function highlightPlaceholders(text) {
+  return escapeHtml(text)
+    .replace(/\{[A-Z_]+\}/g, m => '<span class="placeholder">' + m + '</span>');
+}
+
+// ============ RENDER DE UNA ENTRADA ============
+function renderEntry(e) {
+  const sev = e.severity || 'info';
+  const isCustom = !!e._custom;
+  const casesRows = (e.cases || []).map(c => `
+    <tr>
+      <td class="td-date">${c.date || '—'}</td>
+      <td class="td-ticket">${escapeHtml(c.ticket || '—')}</td>
+      <td class="td-job">${escapeHtml(c.job || '—')}</td>
+      <td>${escapeHtml(c.action || '—')}</td>
+    </tr>
+  `).join('');
+
+  const casesHtml = casesRows ? `
+    <div class="entry-section">
+      <h4>Casos documentados</h4>
+      <table class="cases-table">
+        <thead><tr><th>Fecha</th><th>Ticket</th><th>Job / Nº</th><th>Acción tomada</th></tr></thead>
+        <tbody>${casesRows}</tbody>
+      </table>
+    </div>` : '';
+
+  const programs = (e.programs || []).map(p => `<span class="tag">${escapeHtml(p)}</span>`).join('');
+  const files = (e.files || []).map(f => `<span class="tag">${escapeHtml(f)}</span>`).join('');
+
+  const tagsHtml = (programs || files) ? `
+    <div class="entry-section">
+      <h4>Programas y archivos involucrados</h4>
+      <div class="tag-list">${programs}${files}</div>
+    </div>` : '';
+
+  const resolutionSteps = (e.resolution || []).map(r => `<li>${escapeHtml(r)}</li>`).join('');
+
+  // Acciones solo para entradas custom
+  const actionsHtml = isCustom ? `
+    <div class="entry-actions">
+      <button class="entry-action-btn" onclick="openModalForEdit('${escapeHtml(e.id)}')" title="Editar">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="m18.5 2.5 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        Editar
+      </button>
+      <button class="entry-action-btn danger" onclick="deleteEntry('${escapeHtml(e.id)}')" title="Eliminar">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+        Eliminar
+      </button>
+    </div>` : '';
+
+  const customBadge = isCustom ? '<span class="custom-badge">Creada por operador</span>' : '';
+
+  return `
+    <article class="entry severity-${sev}" data-id="${escapeHtml(e.id)}" data-category="${escapeHtml(e.category)}">
+      <div class="entry-header">
+        <span class="entry-code">${escapeHtml(e.id)}${customBadge}</span>
+        <div class="entry-title-block">
+          <div class="entry-title">${escapeHtml(e.title)}</div>
+          <div class="entry-category">${escapeHtml(e.category)}</div>
+        </div>
+        ${actionsHtml}
+        <span class="severity-badge">${sev}</span>
+      </div>
+      <div class="entry-body">
+        <div class="entry-section">
+          <h4>Mensaje</h4>
+          <pre class="message-block">${highlightPlaceholders(e.message)}</pre>
+        </div>
+        <div class="entry-section">
+          <h4>Causa</h4>
+          <p>${escapeHtml(e.cause)}</p>
+        </div>
+        ${tagsHtml}
+        <div class="entry-section">
+          <h4>Resolución</h4>
+          <ul>${resolutionSteps}</ul>
+        </div>
+        ${casesHtml}
+      </div>
+    </article>
+  `;
+}
+
+// ============ RENDER COMPLETO ============
+function rebuildSidebarAndFilters() {
+  const all = getAllEntries();
+  const cats = [];
+  all.forEach(e => { if (e.category && !cats.includes(e.category)) cats.push(e.category); });
+
+  // Rebuild filter buttons
+  const filtersContainer = document.querySelector('.search-bar .filters');
+  const resultCount = document.getElementById('resultCount');
+  const existingActive = document.querySelector('.filter-btn.active');
+  const currentActiveFilter = existingActive ? existingActive.dataset.filter : 'all';
+
+  let buttonsHtml = '<button class="filter-btn' + (currentActiveFilter === 'all' ? ' active' : '') + '" data-filter="all">Todos</button>';
+  cats.forEach(c => {
+    buttonsHtml += `<button class="filter-btn${currentActiveFilter === c ? ' active' : ''}" data-filter="${escapeHtml(c)}">${escapeHtml(c)}</button>`;
+  });
+  buttonsHtml += '<span class="result-count" id="resultCount"></span>';
+  filtersContainer.innerHTML = buttonsHtml;
+
+  // Re-attach filter listeners
+  document.querySelectorAll('.filter-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentFilter = btn.dataset.filter;
+      renderAll(currentFilter, searchInput.value);
+    });
+  });
+
+  // Rebuild sidebar
+  const sidebar = document.querySelector('.sidebar');
+  let sidebarHtml = '<h3>Categorías</h3>';
+  cats.forEach(cat => {
+    const items = all.filter(e => e.category === cat);
+    let itemsHtml = '';
+    items.forEach(e => {
+      const titleShort = e.title.length > 40 ? e.title.substring(0, 40) + '…' : e.title;
+      itemsHtml += `<a href="#" data-target="${escapeHtml(e.id)}">${escapeHtml(e.id)} — ${escapeHtml(titleShort)}</a>`;
+    });
+    sidebarHtml += `<div class="cat-group"><h3 style="font-size:10px;color:#94a3b8;padding:8px 20px 4px;text-transform:uppercase;letter-spacing:0.08em;">${escapeHtml(cat)}</h3>${itemsHtml}</div>`;
+  });
+  sidebar.innerHTML = sidebarHtml;
+
+  // Re-attach sidebar listeners
+  document.querySelectorAll('.sidebar a[data-target]').forEach(a => {
+    a.addEventListener('click', (ev) => {
+      ev.preventDefault();
+      const id = a.dataset.target;
+      const el = document.querySelector(`.entry[data-id="${CSS.escape(id)}"]`);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        el.style.transition = 'background 0.3s';
+        el.style.background = '#fffbeb';
+        setTimeout(() => { el.style.background = ''; }, 1500);
+      }
+    });
+  });
+}
+
+function renderAll(filter = 'all', query = '') {
+  const container = document.getElementById('entriesContainer');
+  const noResults = document.getElementById('noResults');
+  const q = query.toLowerCase().trim();
+  const all = getAllEntries();
+  let html = '';
+  let count = 0;
+
+  for (const e of all) {
+    if (filter !== 'all' && e.category !== filter) continue;
+    if (q) {
+      const haystack = [
+        e.id, e.title, e.category, e.message, e.cause,
+        (e.programs || []).join(' '),
+        (e.files || []).join(' '),
+        (e.resolution || []).join(' '),
+        (e.cases || []).map(c => (c.job || '') + ' ' + (c.ticket || '') + ' ' + (c.action || '')).join(' ')
+      ].join(' \n').toLowerCase();
+      if (!haystack.includes(q)) continue;
+    }
+    html += renderEntry(e);
+    count++;
+  }
+
+  container.innerHTML = html;
+  noResults.style.display = count === 0 ? 'block' : 'none';
+  document.getElementById('resultCount').textContent = count + ' resultado' + (count !== 1 ? 's' : '');
+}
+
+// ============ MODAL ============
+const modal = document.getElementById('entryModal');
+const modalTitle = document.getElementById('modalTitle');
+const form = document.getElementById('entryForm');
+let editingId = null;
+
+function openModal() {
+  editingId = null;
+  modalTitle.textContent = 'Nueva entrada MSGW';
+  form.reset();
+  document.querySelector('input[name="severity"][value="warning"]').checked = true;
+  document.getElementById('f_category_new_group').style.display = 'none';
+  clearErrors();
+  modal.classList.add('open');
+  setTimeout(() => document.getElementById('f_id').focus(), 100);
+}
+
+function openModalForEdit(id) {
+  const entry = customEntries.find(e => e.id === id);
+  if (!entry) {
+    showToast('No se encontró la entrada para editar.', 'error');
+    return;
+  }
+  editingId = id;
+  modalTitle.textContent = 'Editar entrada: ' + id;
+  form.reset();
+  document.getElementById('f_id').value = entry.id || '';
+  document.getElementById('f_id').readOnly = true; // No cambiar el ID al editar
+  document.getElementById('f_title').value = entry.title || '';
+  document.getElementById('f_message').value = entry.message || '';
+  document.getElementById('f_cause').value = entry.cause || '';
+  document.getElementById('f_programs').value = (entry.programs || []).join(', ');
+  document.getElementById('f_files').value = (entry.files || []).join(', ');
+  document.getElementById('f_resolution').value = (entry.resolution || []).join('\n');
+
+  // Severity
+  const sev = entry.severity || 'warning';
+  document.querySelector(`input[name="severity"][value="${sev}"]`).checked = true;
+
+  // Categoría
+  const knownCats = Array.from(document.getElementById('f_category').options).map(o => o.value);
+  if (knownCats.includes(entry.category)) {
+    document.getElementById('f_category').value = entry.category;
+    document.getElementById('f_category_new_group').style.display = 'none';
+  } else {
+    document.getElementById('f_category').value = '__new__';
+    document.getElementById('f_category_new_group').style.display = '';
+    document.getElementById('f_category_new').value = entry.category;
+  }
+
+  // Caso documentado (si existe)
+  if (entry.cases && entry.cases.length > 0) {
+    const c = entry.cases[0];
+    document.getElementById('f_case_date').value = c.date || '';
+    document.getElementById('f_case_ticket').value = c.ticket || '';
+    document.getElementById('f_case_job').value = c.job || '';
+    document.getElementById('f_case_action').value = c.action || '';
+  }
+
+  clearErrors();
+  modal.classList.add('open');
+}
+
+function closeModal() {
+  modal.classList.remove('open');
+  editingId = null;
+  document.getElementById('f_id').readOnly = false;
+}
+
+function clearErrors() {
+  document.querySelectorAll('.form-group.has-error').forEach(g => g.classList.remove('has-error'));
+}
+
+function showError(fieldName, message) {
+  const field = document.getElementById('f_' + fieldName) || document.querySelector(`[name="${fieldName}"]`);
+  if (field) {
+    const group = field.closest('.form-group');
+    if (group) {
+      group.classList.add('has-error');
+      const err = group.querySelector('.form-error');
+      if (err && message) err.textContent = message;
+    }
+  }
+}
+
+// Validación + guardado
+form.addEventListener('submit', (ev) => {
+  ev.preventDefault();
+  clearErrors();
+  let valid = true;
+
+  const id = document.getElementById('f_id').value.trim();
+  const title = document.getElementById('f_title').value.trim();
+  const message = document.getElementById('f_message').value.trim();
+  const cause = document.getElementById('f_cause').value.trim();
+  const resolutionRaw = document.getElementById('f_resolution').value.trim();
+  const severity = document.querySelector('input[name="severity"]:checked')?.value || 'warning';
+  const categorySelect = document.getElementById('f_category').value;
+  const categoryNew = document.getElementById('f_category_new').value.trim();
+  const programsRaw = document.getElementById('f_programs').value.trim();
+  const filesRaw = document.getElementById('f_files').value.trim();
+  const caseDate = document.getElementById('f_case_date').value;
+  const caseTicket = document.getElementById('f_case_ticket').value.trim();
+  const caseJob = document.getElementById('f_case_job').value.trim();
+  const caseAction = document.getElementById('f_case_action').value.trim();
+
+  // Validaciones obligatorias
+  if (!id) { showError('id', 'El código es obligatorio.'); valid = false; }
+  else if (!editingId && (BASE_ENTRIES.some(e => e.id === id) || customEntries.some(e => e.id === id))) {
+    showError('id', 'Ya existe una entrada con ese código.'); valid = false;
+  }
+  if (!title) { showError('title', 'El título es obligatorio.'); valid = false; }
+  if (!message) { showError('message', 'El mensaje es obligatorio.'); valid = false; }
+  if (!cause) { showError('cause', 'La causa es obligatoria.'); valid = false; }
+  if (!resolutionRaw) { showError('resolution', 'La resolución es obligatoria.'); valid = false; }
+  if (!categorySelect) { showError('category', 'La categoría es obligatoria.'); valid = false; }
+  else if (categorySelect === '__new__' && !categoryNew) {
+    showError('category_new', 'Ingresá el nombre de la categoría.'); valid = false;
+  }
+
+  if (!valid) {
+    showToast('Revisá los campos marcados en rojo.', 'error');
+    return;
+  }
+
+  // Armar categoría final
+  const category = categorySelect === '__new__' ? categoryNew : categorySelect;
+
+  // Parsear listas
+  const programs = programsRaw ? programsRaw.split(',').map(s => s.trim()).filter(Boolean) : [];
+  const files = filesRaw ? filesRaw.split(',').map(s => s.trim()).filter(Boolean) : [];
+
+  // Parsear resolución (un paso por línea)
+  const resolution = resolutionRaw.split('\n').map(s => s.trim()).filter(Boolean);
+
+  // Caso documentado (si al menos uno tiene valor)
+  let cases = [];
+  if (caseDate || caseTicket || caseJob || caseAction) {
+    cases.push({ date: caseDate, ticket: caseTicket, job: caseJob, action: caseAction });
+  }
+
+  const entry = {
+    id, title, category, severity, message, cause,
+    programs, files, resolution, cases,
+    _custom: true,
+    _createdAt: new Date().toISOString(),
+  };
+
+  if (editingId) {
+    // Editar existente
+    const idx = customEntries.findIndex(e => e.id === editingId);
+    if (idx >= 0) {
+      entry._createdAt = customEntries[idx]._createdAt;
+      customEntries[idx] = entry;
+    }
+    showToast('Entrada actualizada: ' + id, 'success');
+  } else {
+    // Crear nueva
+    customEntries.push(entry);
+    showToast('Entrada creada: ' + id, 'success');
+  }
+
+  if (saveCustomEntries(customEntries)) {
+    closeModal();
+    rebuildSidebarAndFilters();
+    renderAll(currentFilter, searchInput.value);
+  } else {
+    showToast('Error al guardar en el navegador.', 'error');
+  }
+});
+
+// Eliminar entrada
+function deleteEntry(id) {
+  if (!confirm('¿Eliminar la entrada "' + id + '"? Esta acción no se puede deshacer.')) return;
+  customEntries = customEntries.filter(e => e.id !== id);
+  if (saveCustomEntries(customEntries)) {
+    showToast('Entrada eliminada: ' + id, 'success');
+    rebuildSidebarAndFilters();
+    renderAll(currentFilter, searchInput.value);
+  } else {
+    showToast('Error al eliminar.', 'error');
+  }
+}
+
+// Exponer para onclick
+window.openModalForEdit = openModalForEdit;
+window.deleteEntry = deleteEntry;
+
+// ============ TOAST ============
+let toastTimer = null;
+function showToast(message, type = 'info') {
+  const toast = document.getElementById('toast');
+  toast.textContent = message;
+  toast.className = 'toast show ' + type;
+  if (toastTimer) clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => {
+    toast.classList.remove('show');
+  }, 3000);
+}
+
+// ============ EVENT LISTENERS ============
+const searchInput = document.getElementById('searchInput');
+let currentFilter = 'all';
+
+searchInput.addEventListener('input', () => {
+  renderAll(currentFilter, searchInput.value);
+});
+
+document.getElementById('btnNewEntry').addEventListener('click', openModal);
+document.getElementById('fabNewEntry').addEventListener('click', openModal);
+document.getElementById('modalClose').addEventListener('click', closeModal);
+document.getElementById('modalCancel').addEventListener('click', closeModal);
+
+// Cerrar al hacer click fuera del modal
+modal.addEventListener('click', (ev) => {
+  if (ev.target === modal) closeModal();
+});
+
+// Cerrar con ESC
+document.addEventListener('keydown', (ev) => {
+  if (ev.key === 'Escape' && modal.classList.contains('open')) closeModal();
+});
+
+// Toggle campo "nueva categoría"
+document.getElementById('f_category').addEventListener('change', (ev) => {
+  const isNew = ev.target.value === '__new__';
+  document.getElementById('f_category_new_group').style.display = isNew ? '' : 'none';
+  if (!isNew) document.getElementById('f_category_new').value = '';
+});
+
+// ============ INIT ============
+rebuildSidebarAndFilters();
+renderAll();
+
+// Mostrar aviso si hay entradas custom
+if (customEntries.length > 0) {
+  console.log('Entradas custom cargadas:', customEntries.length);
+}
+</script>
+
+</body>
+</html>
