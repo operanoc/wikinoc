@@ -1424,8 +1424,8 @@ const BASE_ENTRIES = [
       {
         "date": "2026-07-15",
         "ticket": "INC 0041043",
-        "job": "BCHAGENTES / 631095",
-        "action": "Se llamó a Ricardo Caldeiro, indicó contestar con G. Finalizó normalmente."
+        "job": "BCHAGENTES / 631095 / GCASTE",
+        "action": "RNX1221 en P57608 sentencia 0000001881 sobre F57607LE. Ricardo Caldeiro confirma por mail (15/07/2026) que el workaround oficial es responder 'G' hasta la solución definitiva prevista para el 21/07/2026. Respondido con 'G' — finalizó normalmente. Ver entrada BCHAGENTES-MSGW para el procedimiento completo."
       },
       {
         "date": "2026-03-03",
@@ -1873,8 +1873,8 @@ const BASE_ENTRIES = [
       "Pinot"
     ],
     "severity": "warning",
-    "message": "Trabajo: BCHAGENTES — Usuario: GCASTE — Estado: MSGW\nMensajes típicos: RNX1221 (secuencia de operación inválida para F57607LE) o mensajes similares a los jobs de polling.",
-    "cause": "El job BCHAGENTES es un job batch que procesa agentes. Cuando entra en MSGW, generalmente es por RNX1221 (actualización sin operación de entrada previa) sobre archivos F57607LE u otros del módulo de agentes. Verificar el mensaje específico con WRKJOB opción 10 (Display job log, if active, on-line, or by job).",
+    "message": "Trabajo: BCHAGENTES — Usuario: GCASTE — Número: 631095 — Estado: MSGW\n\nJob log típico:\n  4700 - CHKOBJ OBJ(*LIBL/X0901E) OBJTYPE('*PGM') MBR(*NONE) AUT('*NONE')\n  5700 - RCVMSG PGMQ(*SAME) MSGQ(*PGMQ) RMV(*YES)\n  La secuencia de operación para el miembro F57607LE no es válida. (C I)\n  Actualización o supresión en el archivo F57607LE sin operación de entrada previa.\n  Error de función. RNX1221 no supervisado por P57608 en la sentencia 0000001881, instrucción X'0000'.\n  Actualización o supresión en el archivo F57607LE sin operación de entrada previa (C G D F).",
+    "cause": "El job BCHAGENTES es un job batch de Pinot que procesa agentes. El MSGW se produce por RNX1221 (actualización o supresión en F57607LE sin operación de entrada previa) disparado desde el programa P57608 en la sentencia 0000001881. El error es recurrente y ya está abierto el ticket INC 0041043 con solución definitiva prevista para el 21/07/2026. Mientras tanto, Ricardo Caldeiro habilitó como workaround oficial contestar con 'G' cada vez que aparece — el job finaliza normalmente tras la respuesta.",
     "programs": [
       "P57608",
       "X0901E"
@@ -1883,17 +1883,19 @@ const BASE_ENTRIES = [
       "F57607LE"
     ],
     "resolution": [
-      "Hacer WRKJOB sobre el job en MSGW y ver el mensaje específico.",
-      "Si es RNX1221: responder con G (siguiendo el procedimiento de esa entrada).",
-      "Si es otro mensaje: buscarlo en esta wiki por código.",
-      "Llamar a Ricardo Caldeiro si el error se repite diariamente."
+      "WORKAROUND OFICIAL (hasta 21/07/2026 — fecha prevista de solución definitiva, confirmada por Ricardo Caldeiro): responder al mensaje con 'G'. El job finaliza normalmente.",
+      "Hacer WRKJOB sobre el job en MSGW y verificar que el mensaje sea RNX1221 sobre F57607LE / P57608 (sentencia 0000001881).",
+      "Responder con 'G' a la pregunta '(C G D F)' — el job continúa y finaliza normalmente.",
+      "Si el mensaje NO es RNX1221 o aparece en otro programa/archivo: buscarlo en esta wiki por código antes de actuar.",
+      "Si el error se repite más de una vez por día o el job no finaliza tras responder 'G': escalar a Ricardo Caldeiro (referente Pinot Polling P1).",
+      "Registrar la incidencia en el ticket INC 0041043 (mismo ticket abierto para la solución definitiva)."
     ],
     "cases": [
       {
         "date": "2026-07-15",
         "ticket": "INC 0041043",
-        "job": "BCHAGENTES / 631095",
-        "action": "Se llamó a Ricardo Caldeiro, indicó contestar con G. Finalizó normalmente."
+        "job": "BCHAGENTES / 631095 / GCASTE",
+        "action": "MSGW por RNX1221 en P57608 sentencia 0000001881 sobre F57607LE. Hugo Magariños escaló al operador. Ricardo Caldeiro confirma por mail (RE: JOB BCHAGENTES EN ESTADO MSGW INC 0041043, 15/07/2026 12:44 ART) que el workaround oficial es responder 'G' hasta la implementación de la solución prevista para el 21/07/2026. Se respondió con 'G' y el job finalizó normalmente."
       },
       {
         "date": "2025-09-11",
