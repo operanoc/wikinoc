@@ -2135,14 +2135,14 @@ const BASE_ENTRIES = [
   },
   {
     "id": "CPA0702",
-    "title": "CPA0702 — Procedimiento CL recibió CPFA0B1 (problema de acceso en J55FT027G / AR_CLTOBJ)",
+    "title": "CPA0702 — Procedimiento CL recibió CPFA0B1 (problema de acceso en J55FT027G / AR_CLTOBJ) — SR recurrente",
     "category": "Errores de Acceso / IFS",
     "system": [
       "Pinot"
     ],
     "severity": "warning",
     "message": "ID de mensaje: CPA0702\nMensaje: El procedimiento J55FT027G ha recibido CPFA0B1. (C D I R)\n\nCausa: El procedimiento de lenguaje de control (CL) J55FT027G ILE del módulo J55FT027G, en el programa J55FT027G de la biblioteca AR_CLTOBJ, ha detectado un error en la sentencia número 0000006200. El texto del mensaje de CPFA0B1 es: No se permite la operación solicitada. Problema de acceso. Utilice F10 (si está disponible) o el mandato Visualizar anotaciones de trabajo (DSPJOBLOG) para ver si los mensajes de las anotaciones de trabajo dan una descripción más completa de la causa del error.",
-    "cause": "El programa CL J55FT027G (biblioteca AR_CLTOBJ, sentencia 0000006200) recibe un CPFA0B1 subyacente: 'No se permite la operación solicitada. Problema de acceso.' Es un error de acceso a un objeto del IFS o del sistema de archivos — generalmente un archivo de la entidad ARIP48 (la entidad ARIP48 contiene el archivo a procesar). El CPA0702 es un mensaje 'wrapper' que el CL eleva cuando un mandato interno falla con CPFA0B1; la causa raíz hay que buscarla en el DSPJOBLOG (F10) del job. Suele pasar cuando el archivo de la entidad ARIP48 no está accesible (permisos, lock de otro proceso, o el archivo no llegó / se borró antes de tiempo). Relacionado con la entrada CPFA0B1 de esta misma wiki.",
+    "cause": "MENSAJE RECURRENTE — tratado como SR (Service Request) porque se repite sistemáticamente y siempre se resuelve con el mismo procedimiento. El programa CL J55FT027G (biblioteca AR_CLTOBJ, sentencia 0000006200) recibe un CPFA0B1 subyacente: 'No se permite la operación solicitada. Problema de acceso.' Es un error de acceso al archivo de la entidad ARIP48 (la entidad ARIP48 contiene el archivo a procesar). El CPA0702 es un mensaje 'wrapper' que el CL eleva cuando un mandato interno falla con CPFA0B1. Suele pasar cuando el archivo de la entidad ARIP48 no está accesible (permisos, lock de otro proceso, o el archivo no llegó / se borró antes de tiempo). PROCEDIMIENTO ESTÁNDAR: responder con C y reenviar el archivo. Relacionado con la entrada CPFA0B1 de esta misma wiki.",
     "programs": [
       "J55FT027G"
     ],
@@ -2151,19 +2151,20 @@ const BASE_ENTRIES = [
       "Entidad ARIP48 (archivo a procesar)"
     ],
     "resolution": [
-      "Responder con C (cancelar) al mensaje CPA0702.",
+      "PROCEDIMIENTO ESTÁNDAR (mensaje recurrente — siempre igual): responder con C (cancelar) al mensaje CPA0702.",
       "Reenviar el archivo de la entidad ARIP48 para que el job lo vuelva a procesar desde el principio.",
-      "Si el error se repite con el mismo archivo: hacer DSPJOBLOG (o F10) sobre el job y buscar el CPFA0B1 subyacente para ver qué objeto específico fue el que falló.",
+      "Verificar que el job finalice normalmente tras el reenvío.",
+      "Si el error se repite con el mismo archivo después del reenvío: hacer DSPJOBLOG (o F10) sobre el job y buscar el CPFA0B1 subyacente para ver qué objeto específico fue el que falló.",
       "Verificar permisos y locks sobre el archivo de la entidad ARIP48 — si otro job lo está usando, esperar a que libere o escalar.",
-      "Si el problema es recurrente en distintas entidades, escalar a Ricardo Caldeiro (referente Pinot) — puede indicar un problema de configuración de la biblioteca AR_CLTOBJ o del proceso de entrega de archivos.",
+      "Si el problema se vuelve excesivamente recurrente (muchas veces por día / varias entidades), escalar a Ricardo Caldeiro (referente Pinot) — puede indicar un problema de configuración de la biblioteca AR_CLTOBJ o del proceso de entrega de archivos.",
       "Ver entrada CPFA0B1 de esta wiki para el procedimiento detallado del error de acceso subyacente."
     ],
     "cases": [
       {
         "date": "2026-07-15",
-        "ticket": "—",
+        "ticket": "SR (recurrente)",
         "job": "J55FT027G / AR_CLTOBJ / sentencia 0000006200",
-        "action": "CPA0702 recibido a las 13:18:51 — wrapper de CPFA0B1 en sentencia 0000006200 del CL J55FT027G. Se contestó con C y se reenvió el archivo de la entidad ARIP48. El mensaje corresponde a la entidad ARIP48 que contiene el archivo para procesar."
+        "action": "CPA0702 recibido a las 13:18:51 — wrapper de CPFA0B1 en sentencia 0000006200 del CL J55FT027G. Mensaje recurrente: se aplicó procedimiento estándar (responder con C y reenviar el archivo de la entidad ARIP48). El mensaje corresponde a la entidad ARIP48 que contiene el archivo a procesar."
       }
     ]
   },
