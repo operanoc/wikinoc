@@ -1263,6 +1263,260 @@ body.auth-locked {
   overflow: hidden;
 }
 
+/* ============ NOciTO — Asistente IA flotante ============ */
+.nocito-fab {
+  position: fixed;
+  bottom: 24px;
+  right: 96px;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 6px 20px rgba(99, 102, 241, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 13px;
+  letter-spacing: -0.02em;
+  z-index: 90;
+  transition: transform 0.18s, box-shadow 0.18s;
+  font-family: var(--sans, system-ui, sans-serif);
+}
+.nocito-fab:hover {
+  transform: translateY(-3px) scale(1.05);
+  box-shadow: 0 12px 28px rgba(99, 102, 241, 0.55);
+}
+.nocito-fab:active { transform: scale(0.96); }
+.nocito-fab-dot {
+  position: absolute;
+  top: 4px; right: 4px;
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  background: #ef4444;
+  border: 2px solid #fff;
+  display: none;
+}
+.nocito-fab-dot.online { background: #22c55e; display: block; box-shadow: 0 0 6px #22c55e; }
+.nocito-fab-dot.offline { background: #ef4444; display: block; }
+
+.nocito-panel {
+  position: fixed;
+  bottom: 96px;
+  right: 24px;
+  width: 380px;
+  max-width: calc(100vw - 32px);
+  height: 540px;
+  max-height: calc(100vh - 130px);
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 24px 60px rgba(0,0,0,0.22), 0 4px 12px rgba(0,0,0,0.08);
+  display: none;
+  flex-direction: column;
+  overflow: hidden;
+  z-index: 91;
+  font-family: var(--sans, system-ui, sans-serif);
+}
+.nocito-panel.open {
+  display: flex;
+  animation: nocito-slide-up 0.22s ease-out;
+}
+@keyframes nocito-slide-up {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.nocito-header {
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  color: #fff;
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.nocito-avatar {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.2);
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 800; font-size: 14px;
+}
+.nocito-title-block { flex: 1; min-width: 0; }
+.nocito-title { font-size: 15px; font-weight: 700; line-height: 1.2; }
+.nocito-sub {
+  font-size: 11px; opacity: 0.85;
+  display: flex; align-items: center; gap: 6px;
+  margin-top: 2px;
+}
+.nocito-status-dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: #fbbf24;
+}
+.nocito-status-dot.online { background: #4ade80; box-shadow: 0 0 6px #4ade80; }
+.nocito-status-dot.offline { background: #f87171; }
+.nocito-close {
+  background: rgba(255,255,255,0.2);
+  border: none;
+  color: #fff;
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 18px;
+  line-height: 1;
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.15s;
+}
+.nocito-close:hover { background: rgba(255,255,255,0.35); }
+
+.nocito-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 14px 14px 4px;
+  background: #f8fafc;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.nocito-msg {
+  max-width: 85%;
+  padding: 9px 12px;
+  border-radius: 12px;
+  font-size: 13.5px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+.nocito-msg.user {
+  align-self: flex-end;
+  background: #6366f1;
+  color: #fff;
+  border-bottom-right-radius: 4px;
+}
+.nocito-msg.bot {
+  align-self: flex-start;
+  background: #fff;
+  color: #1e293b;
+  border: 1px solid #e2e8f0;
+  border-bottom-left-radius: 4px;
+}
+.nocito-msg.bot code,
+.nocito-msg.bot pre {
+  background: #f1f5f9;
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-family: var(--mono, monospace);
+  font-size: 12px;
+}
+.nocito-typing {
+  align-self: flex-start;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 10px 14px;
+  display: flex;
+  gap: 4px;
+}
+.nocito-typing span {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: #94a3b8;
+  animation: nocito-bounce 1.4s infinite ease-in-out;
+}
+.nocito-typing span:nth-child(2) { animation-delay: 0.2s; }
+.nocito-typing span:nth-child(3) { animation-delay: 0.4s; }
+@keyframes nocito-bounce {
+  0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+  30% { transform: translateY(-6px); opacity: 1; }
+}
+
+.nocito-error {
+  margin: 0 14px 8px;
+  padding: 8px 12px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #b91c1c;
+  border-radius: 8px;
+  font-size: 12px;
+  display: none;
+}
+.nocito-error.show { display: block; }
+
+.nocito-input-area {
+  border-top: 1px solid #e2e8f0;
+  padding: 10px 12px;
+  background: #fff;
+  display: flex;
+  gap: 8px;
+  align-items: flex-end;
+}
+.nocito-input {
+  flex: 1;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 9px 12px;
+  font-size: 13px;
+  font-family: inherit;
+  resize: none;
+  min-height: 38px;
+  max-height: 120px;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.nocito-input:focus { border-color: #6366f1; }
+.nocito-send {
+  background: #6366f1;
+  color: #fff;
+  border: none;
+  width: 38px; height: 38px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.15s;
+}
+.nocito-send:hover { background: #4f46e5; }
+.nocito-send:disabled { background: #cbd5e1; cursor: not-allowed; }
+.nocito-send svg { width: 16px; height: 16px; }
+
+.nocito-quick {
+  padding: 0 14px 8px;
+  background: #fff;
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.nocito-quick-btn {
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  color: #475569;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 11.5px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.nocito-quick-btn:hover {
+  background: #e0e7ff;
+  border-color: #6366f1;
+  color: #4f46e5;
+}
+
+@media (max-width: 600px) {
+  .nocito-panel {
+    bottom: 0; right: 0;
+    width: 100vw; height: 100vh;
+    max-height: 100vh;
+    border-radius: 0;
+  }
+  .nocito-fab { bottom: 16px; right: 88px; }
+}
+@media print {
+  .nocito-fab, .nocito-panel { display: none !important; }
+}
+
 </style>
 </head>
 <body class="auth-locked">
@@ -1378,6 +1632,48 @@ body.auth-locked {
 <button class="fab" id="fabNewEntry" title="Nueva entrada">
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
 </button>
+
+<!-- ============ NOciTO — Asistente IA flotante ============ -->
+<button id="nocitoFab" class="nocito-fab" title="NOciTO — Asistente IA" aria-label="Abrir NOciTO">
+  NOciTO
+  <span class="nocito-fab-dot" id="nocitoFabDot" aria-hidden="true"></span>
+</button>
+
+<div id="nocitoPanel" class="nocito-panel" role="dialog" aria-label="NOciTO Asistente IA">
+  <div class="nocito-header">
+    <div class="nocito-avatar">N</div>
+    <div class="nocito-title-block">
+      <div class="nocito-title">NOciTO</div>
+      <div class="nocito-sub">
+        <span class="nocito-status-dot" id="nocitoStatusDot"></span>
+        <span id="nocitoStatusText">conectando…</span>
+      </div>
+    </div>
+    <button class="nocito-close" id="nocitoClose" title="Cerrar" aria-label="Cerrar">×</button>
+  </div>
+
+  <div class="nocito-messages" id="nocitoMessages"></div>
+
+  <div class="nocito-error" id="nocitoError"></div>
+
+  <div class="nocito-quick" id="nocitoQuick">
+    <button class="nocito-quick-btn" data-q="¿Qué hago con RNX1221?">RNX1221</button>
+    <button class="nocito-quick-btn" data-q="Job BCHAGENTES en MSGW">BCHAGENTES</button>
+    <button class="nocito-quick-btn" data-q="¿Cómo uso WRKJOB?">WRKJOB</button>
+  </div>
+
+  <div class="nocito-input-area">
+    <textarea
+      id="nocitoInput"
+      class="nocito-input"
+      placeholder="Escribí tu consulta… (Enter para enviar, Shift+Enter para salto de línea)"
+      rows="1"
+      aria-label="Consulta para NOciTO"></textarea>
+    <button class="nocito-send" id="nocitoSend" aria-label="Enviar">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+    </button>
+  </div>
+</div>
 
 <!-- MODAL: Gestionar entradas (ocultas / editadas / restaurar todo) -->
 <div class="modal-overlay" id="manageModal">
@@ -3242,6 +3538,281 @@ if (isAuthed()) {
 } else {
   showLogin();
 }
+</script>
+
+<!-- ============ NOciTO — Asistente IA (frontend) ============ -->
+<script>
+(function nocitoInit() {
+  'use strict';
+
+  // Configuración del backend
+  const NOCITO_BACKEND = (window.NOCITO_AI_URL || 'http://127.0.0.1:8787') + '/api';
+
+  // Referencias DOM
+  const fab = document.getElementById('nocitoFab');
+  const fabDot = document.getElementById('nocitoFabDot');
+  const panel = document.getElementById('nocitoPanel');
+  const closeBtn = document.getElementById('nocitoClose');
+  const messagesEl = document.getElementById('nocitoMessages');
+  const inputEl = document.getElementById('nocitoInput');
+  const sendBtn = document.getElementById('nocitoSend');
+  const errorEl = document.getElementById('nocitoError');
+  const statusDot = document.getElementById('nocitoStatusDot');
+  const statusText = document.getElementById('nocitoStatusText');
+  const quickEl = document.getElementById('nocitoQuick');
+
+  // Estado
+  let conversation = [];
+  let backendOnline = false;
+  let isSending = false;
+
+  // ============ Helpers ============
+  function escapeHtml(s) {
+    if (s == null) return '';
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  // Convierte **bold**, `code`, y saltos de línea a HTML seguro
+  function formatMessage(text) {
+    let s = escapeHtml(text);
+    s = s.replace(/`([^`]+)`/g, '<code>$1</code>');
+    s = s.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+    return s;
+  }
+
+  function addMessage(role, content) {
+    const div = document.createElement('div');
+    div.className = 'nocito-msg ' + (role === 'user' ? 'user' : 'bot');
+    if (role === 'user') {
+      div.textContent = content;
+    } else {
+      div.innerHTML = formatMessage(content);
+    }
+    messagesEl.appendChild(div);
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+    return div;
+  }
+
+  function showTyping() {
+    const div = document.createElement('div');
+    div.className = 'nocito-typing';
+    div.id = 'nocitoTyping';
+    div.innerHTML = '<span></span><span></span><span></span>';
+    messagesEl.appendChild(div);
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+  }
+
+  function hideTyping() {
+    const t = document.getElementById('nocitoTyping');
+    if (t) t.remove();
+  }
+
+  function showError(msg) {
+    errorEl.textContent = msg;
+    errorEl.classList.add('show');
+    setTimeout(() => errorEl.classList.remove('show'), 5000);
+  }
+
+  function setStatus(state) {
+    fabDot.className = 'nocito-fab-dot ' + state;
+    statusDot.className = 'nocito-status-dot ' + state;
+    if (state === 'online') {
+      statusText.textContent = 'en línea';
+    } else if (state === 'offline') {
+      statusText.textContent = 'sin conexión';
+    } else {
+      statusText.textContent = 'conectando…';
+    }
+  }
+
+  // ============ Serialización de la wiki como contexto ============
+  function buildWikiContext() {
+    const all = (typeof getAllEntries === 'function') ? getAllEntries() : [];
+    if (all.length === 0) return '(wiki vacía)';
+    const lines = [`=== WIKI NOC — ${all.length} entradas ===`, ''];
+    all.forEach(e => {
+      lines.push(`--- ENTRADA: ${e.id} ---`);
+      lines.push(`Título: ${e.title || ''}`);
+      lines.push(`Categoría: ${e.category || ''}`);
+      lines.push(`Sistemas: ${(e.system || []).join(', ')}`);
+      lines.push(`Severidad: ${e.severity || ''}`);
+      if (e.message) lines.push(`Mensaje: ${e.message}`);
+      if (e.cause) lines.push(`Causa: ${e.cause}`);
+      if (e.programs && e.programs.length) lines.push(`Programas: ${e.programs.join(', ')}`);
+      if (e.files && e.files.length) lines.push(`Archivos: ${e.files.join(', ')}`);
+      if (e.workaround && e.workaround.active) {
+        lines.push(`WORKAROUND ACTIVO${e.workaround.until ? ' hasta ' + e.workaround.until : ''}: ${e.workaround.text || ''}`);
+        if (e.workaround.source) lines.push(`  Fuente: ${e.workaround.source}`);
+      }
+      if (e.resolution && e.resolution.length) {
+        lines.push('Resolución:');
+        e.resolution.forEach((r, i) => lines.push(`  ${i+1}. ${r}`));
+      }
+      if (e.cases && e.cases.length) {
+        lines.push('Casos documentados:');
+        e.cases.forEach(c => {
+          lines.push(`  • ${c.date || '—'} | Ticket: ${c.ticket || '—'} | Job: ${c.job || '—'}`);
+          if (c.action) lines.push(`    Acción: ${c.action}`);
+        });
+      }
+      lines.push('');
+    });
+    return lines.join('\n');
+  }
+
+  // ============ Health check periódico ============
+  async function checkBackend() {
+    try {
+      const res = await fetch(NOCITO_BACKEND + '/health', { method: 'GET' });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.ok) {
+          backendOnline = true;
+          setStatus('online');
+          return;
+        }
+      }
+      backendOnline = false;
+      setStatus('offline');
+    } catch (err) {
+      backendOnline = false;
+      setStatus('offline');
+    }
+  }
+
+  // ============ Enviar consulta ============
+  async function send(text) {
+    text = (text || '').trim();
+    if (!text || isSending) return;
+
+    if (!backendOnline) {
+      showError('NOciTO no está conectado. Levantá el backend con "npm start" en /server.');
+      return;
+    }
+
+    isSending = true;
+    sendBtn.disabled = true;
+    hideError();
+
+    addMessage('user', text);
+    conversation.push({ role: 'user', content: text });
+
+    inputEl.value = '';
+    autoResize();
+
+    showTyping();
+
+    try {
+      const wikiContext = buildWikiContext();
+      const res = await fetch(NOCITO_BACKEND + '/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          messages: conversation.slice(),
+          wikiContext,
+          question: text,
+        }),
+      });
+
+      hideTyping();
+
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        const errMsg = errData.error || `HTTP ${res.status}`;
+        addMessage('assistant', '⚠ Hubo un error al consultar al backend: ' + errMsg);
+        showError('Error: ' + errMsg);
+        return;
+      }
+
+      const data = await res.json();
+      const reply = data.response || '(sin respuesta)';
+      addMessage('assistant', reply);
+      conversation.push({ role: 'assistant', content: reply });
+    } catch (err) {
+      hideTyping();
+      addMessage('assistant', '⚠ No pude conectar con el backend. ¿Está corriendo en http://127.0.0.1:8787?\n\nError: ' + err.message);
+      showError('Error de conexión: ' + err.message);
+    } finally {
+      isSending = false;
+      sendBtn.disabled = false;
+      inputEl.focus();
+    }
+  }
+
+  function hideError() {
+    errorEl.classList.remove('show');
+  }
+
+  // ============ Auto-resize del textarea ============
+  function autoResize() {
+    inputEl.style.height = 'auto';
+    inputEl.style.height = Math.min(inputEl.scrollHeight, 120) + 'px';
+  }
+
+  // ============ Event listeners ============
+  fab.addEventListener('click', () => {
+    panel.classList.add('open');
+    fab.style.display = 'none';
+    setTimeout(() => inputEl.focus(), 100);
+    if (conversation.length === 0) {
+      const entryCount = (typeof getAllEntries === 'function') ? getAllEntries().length : 0;
+      addMessage('assistant', `¡Hola! Soy NOciTO 🤖\n\nConozco las ${entryCount} entradas de la wiki (códigos MSGW, causas, resoluciones, casos documentados y workarounds activos).\n\n¿En qué te puedo ayudar? Podés preguntarme por un código de error (RNX1221, CPF4131…), por un job específico (BCHAGENTES, CHKMANAGER…) o por un procedimiento.`);
+    }
+    checkBackend();
+  });
+
+  closeBtn.addEventListener('click', () => {
+    panel.classList.remove('open');
+    fab.style.display = 'flex';
+  });
+
+  sendBtn.addEventListener('click', () => send(inputEl.value));
+
+  inputEl.addEventListener('keydown', (ev) => {
+    if (ev.key === 'Enter' && !ev.shiftKey) {
+      ev.preventDefault();
+      send(inputEl.value);
+    }
+  });
+
+  inputEl.addEventListener('input', autoResize);
+
+  // Botones de consulta rápida
+  quickEl.querySelectorAll('.nocito-quick-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const q = btn.dataset.q;
+      inputEl.value = q;
+      autoResize();
+      send(q);
+    });
+  });
+
+  // Cerrar con ESC
+  document.addEventListener('keydown', (ev) => {
+    if (ev.key === 'Escape' && panel.classList.contains('open')) {
+      panel.classList.remove('open');
+      fab.style.display = 'flex';
+    }
+  });
+
+  // Polling de health cada 30s (solo cuando el panel está abierto)
+  setInterval(() => {
+    if (panel.classList.contains('open')) checkBackend();
+  }, 30000);
+
+  // Health check inicial (sin abrir el panel, solo para pintar el dot)
+  // Lo hacemos diferido para no bloquear el load
+  setTimeout(checkBackend, 1500);
+
+  // Exponer API para debugging desde la consola
+  window.__nocito = {
+    send,
+    getConversation: () => conversation.slice(),
+    getBackendStatus: () => ({ online: backendOnline, url: NOCITO_BACKEND }),
+    buildWikiContext,
+    checkBackend,
+  };
+})();
 </script>
 
 
