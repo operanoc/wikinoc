@@ -272,6 +272,55 @@ main {
 
 .entry-body { padding: 16px 20px; }
 
+/* Banner de aviso crítico: llamar a Ricardo Caldeiro antes de actuar */
+.critical-alert {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+  border: 1px solid #fca5a5;
+  border-left: 4px solid #dc2626;
+  border-radius: 8px;
+  padding: 12px 14px;
+  margin-bottom: 16px;
+  box-shadow: 0 1px 2px rgba(220, 38, 38, 0.06);
+}
+.critical-alert-icon {
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #dc2626;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 1;
+  margin-top: 1px;
+}
+.critical-alert-content {
+  flex: 1;
+  min-width: 0;
+}
+.critical-alert-title {
+  color: #991b1b;
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 0.01em;
+  margin-bottom: 2px;
+}
+.critical-alert-text {
+  color: #7f1d1d;
+  font-size: 12.5px;
+  line-height: 1.5;
+}
+.critical-alert-text strong {
+  color: #991b1b;
+  font-weight: 600;
+}
+
 .entry-section { margin-bottom: 16px; }
 .entry-section:last-child { margin-bottom: 0; }
 .entry-section h4 {
@@ -981,6 +1030,13 @@ body.auth-locked {
     <div class="intro">
       <h2>Cómo usar esta wiki</h2>
       <p>Buscá por código de mensaje (ej: <code>RNX1221</code>), por texto del mensaje (<code>Stream file not found</code>), por programa (<code>PTRF15002</code>) o por nombre de job. Los filtros te dejan acotar por categoría.</p>
+      <div class="critical-alert" style="margin-top:14px;margin-bottom:14px;">
+        <div class="critical-alert-icon" aria-hidden="true">!</div>
+        <div class="critical-alert-content">
+          <div class="critical-alert-title">Política para errores críticos</div>
+          <div class="critical-alert-text">Las entradas marcadas como <strong>critical</strong> requieren <strong>llamar a Ricardo Caldeiro antes de tomar cualquier acción</strong> (contestar el job, ENDJOB, WRKJOB, etc.). El aviso aparece como banner rojo al inicio de cada entrada crítica y como primer paso en la lista de resolución.</div>
+        </div>
+      </div>
       <p>Cada entrada incluye:</p>
       <ul>
         <li><strong>Mensaje completo</strong> tal cual aparece en el job log del AS400.</li>
@@ -1854,8 +1910,6 @@ function renderEntry(e) {
       <div class="tag-list">${programs}${files}</div>
     </div>` : '';
 
-  const resolutionSteps = (e.resolution || []).map(r => `<li>${escapeHtml(r)}</li>`).join('');
-
   // Acciones solo para entradas custom
   const actionsHtml = isCustom ? `
     <div class="entry-actions">
@@ -1871,6 +1925,26 @@ function renderEntry(e) {
 
   const customBadge = isCustom ? '<span class="custom-badge">Creada por operador</span>' : '';
 
+  // Banner de aviso para entradas críticas
+  const criticalAlert = sev === 'critical' ? `
+    <div class="critical-alert" role="alert">
+      <div class="critical-alert-icon" aria-hidden="true">!</div>
+      <div class="critical-alert-content">
+        <div class="critical-alert-title">ATENCIÓN — Error crítico</div>
+        <div class="critical-alert-text">Antes de tomar cualquier acción sobre este job, <strong>llamar a Ricardo Caldeiro</strong> para confirmar el procedimiento. No contestar el job ni ejecutar ENDJOB / WRKJOB sin su autorización.</div>
+      </div>
+    </div>` : '';
+
+  // Para críticos, forzar como primer paso de resolución el aviso a Ricardo
+  let resolutionList = (e.resolution || []).slice();
+  if (sev === 'critical') {
+    const caldeiroStep = '⚠ ANTES DE ACTUAR: llamar a Ricardo Caldeiro para validar el procedimiento.';
+    if (!resolutionList.some(r => r.includes('Ricardo Caldeiro'))) {
+      resolutionList.unshift(caldeiroStep);
+    }
+  }
+  const resolutionSteps = resolutionList.map(r => `<li>${escapeHtml(r)}</li>`).join('');
+
   return `
     <article class="entry severity-${sev}" data-id="${escapeHtml(e.id)}" data-category="${escapeHtml(e.category)}">
       <div class="entry-header">
@@ -1883,6 +1957,7 @@ function renderEntry(e) {
         <span class="severity-badge">${sev}</span>
       </div>
       <div class="entry-body">
+        ${criticalAlert}
         <div class="entry-section">
           <h4>Mensaje</h4>
           <pre class="message-block">${highlightPlaceholders(e.message)}</pre>
