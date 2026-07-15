@@ -13,6 +13,18 @@
 // El servidor escucha en http://localhost:8787 por defecto.
 // =====================================================================
 
+// Handlers de errores globales — evitan que el server se caiga ante
+// un error no capturado o una promise rejection no manejada (típico
+// de SDKs externos que tiran errores async).
+process.on('uncaughtException', (err) => {
+  console.error('[wikinoc-ai] UNCAUGHT EXCEPTION:', err);
+  // No salimos — el server sigue corriendo.
+});
+process.on('unhandledRejection', (err) => {
+  console.error('[wikinoc-ai] UNHANDLED REJECTION:', err);
+  // No salimos — el server sigue corriendo.
+});
+
 import express from 'express';
 import cors from 'cors';
 import { existsSync, writeFileSync, readFileSync, mkdirSync } from 'node:fs';
