@@ -662,6 +662,25 @@ pre::-webkit-scrollbar-thumb { background: #475569; border-radius: 3px; }
 .btn-new-entry:active { transform: scale(0.97); }
 .btn-new-entry svg { width: 14px; height: 14px; }
 
+.btn-manage {
+  background: transparent;
+  color: var(--text);
+  border: 1px solid var(--border-strong);
+  padding: 7px 14px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: background 0.15s, border-color 0.15s;
+  white-space: nowrap;
+}
+.btn-manage:hover { background: var(--bg-code); border-color: var(--accent); color: var(--accent); }
+.btn-manage:active { transform: scale(0.97); }
+.btn-manage svg { width: 14px; height: 14px; }
+
 .fab {
   position: fixed;
   bottom: 24px;
@@ -701,6 +720,64 @@ pre::-webkit-scrollbar-thumb { background: #475569; border-radius: 3px; }
   border: 1px solid #6ee7b7;
   margin-left: 6px;
   vertical-align: middle;
+}
+.edited-badge {
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 1px 6px;
+  border-radius: 3px;
+  background: #fffbeb;
+  color: #b45309;
+  border: 1px solid #fcd34d;
+  margin-left: 6px;
+  vertical-align: middle;
+}
+
+/* Lista del modal Gestionar */
+.manage-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.manage-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg);
+}
+.manage-item-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.manage-item-code {
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 700;
+  background: var(--bg-code);
+  color: var(--accent);
+  padding: 2px 6px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+.manage-item-title {
+  font-size: 13px;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.manage-item-meta {
+  font-size: 11px;
+  color: var(--text-muted);
+  flex-shrink: 0;
 }
 .entry-actions {
   display: flex;
@@ -1522,6 +1599,10 @@ body.auth-locked {
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
         Nueva entrada
       </button>
+      <button class="btn-manage" id="btnManageEntries" title="Ver entradas ocultas y restaurar ediciones">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+        Gestionar
+      </button>
       <div>
         <div>16 mensajes base</div>
         <div>Última actualización: 2026-07-15</div>
@@ -1591,6 +1672,29 @@ body.auth-locked {
 <button class="fab" id="fabNewEntry" title="Nueva entrada">
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
 </button>
+
+<!-- MODAL: Gestionar entradas (ocultas / editadas / restaurar todo) -->
+<div class="modal-overlay" id="manageModal">
+  <div class="modal" style="max-width:720px;">
+    <div class="modal-header">
+      <div>
+        <h2>Gestionar entradas</h2>
+        <div class="modal-sub">Entradas base que fueron editadas u ocultadas localmente por el operador.</div>
+      </div>
+      <button class="modal-close" id="manageModalClose" title="Cerrar">×</button>
+    </div>
+    <div class="modal-body" id="manageModalBody">
+      <!-- Se rellena dinámicamente -->
+    </div>
+    <div class="modal-footer">
+      <div class="left-note">Los cambios son locales (navegador).</div>
+      <div class="actions">
+        <button type="button" class="btn-secondary" id="manageModalCloseBtn">Cerrar</button>
+        <button type="button" class="btn-primary" id="btnRestoreAll" title="Revertir todas las ediciones locales">Restaurar todo</button>
+      </div>
+    </div>
+  </div>
+</div>
 
 <!-- MODAL: Crear / Editar entrada -->
 <div class="modal-overlay" id="entryModal">
@@ -2467,6 +2571,8 @@ const BASE_ENTRIES = [
 ];
 
 const STORAGE_KEY = 'msgw_wiki_custom_entries_v1';
+const OVERRIDES_KEY = 'msgw_wiki_overrides_v1';   // ediciones sobre BASE_ENTRIES
+const HIDDEN_KEY   = 'msgw_wiki_hidden_v1';         // entradas base "eliminadas" por el operador
 
 // ============ STORAGE: cargar / guardar entradas custom ============
 function loadCustomEntries() {
@@ -2491,12 +2597,72 @@ function saveCustomEntries(entries) {
   }
 }
 
+// ============ STORAGE: overrides sobre entradas base ============
+// Estructura: { "<id>": { ...camposEditados, _editedAt: ISO }, ... }
+function loadOverrides() {
+  try {
+    const raw = localStorage.getItem(OVERRIDES_KEY);
+    if (!raw) return {};
+    const parsed = JSON.parse(raw);
+    return (parsed && typeof parsed === 'object') ? parsed : {};
+  } catch (err) {
+    console.error('Error leyendo overrides:', err);
+    return {};
+  }
+}
+
+function saveOverrides(overrides) {
+  try {
+    localStorage.setItem(OVERRIDES_KEY, JSON.stringify(overrides));
+    return true;
+  } catch (err) {
+    console.error('Error guardando overrides:', err);
+    return false;
+  }
+}
+
+// ============ STORAGE: entradas base ocultas ("eliminadas") ============
+function loadHiddenIds() {
+  try {
+    const raw = localStorage.getItem(HIDDEN_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch (err) {
+    console.error('Error leyendo hidden ids:', err);
+    return [];
+  }
+}
+
+function saveHiddenIds(ids) {
+  try {
+    localStorage.setItem(HIDDEN_KEY, JSON.stringify(ids));
+    return true;
+  } catch (err) {
+    console.error('Error guardando hidden ids:', err);
+    return false;
+  }
+}
+
 // Entradas custom cargadas en memoria
 let customEntries = loadCustomEntries();
+let overrides     = loadOverrides();
+let hiddenIds     = loadHiddenIds();
 
-// Combinar base + custom para renderizado
+// Combinar base + custom para renderizado, aplicando overrides y ocultando eliminadas
 function getAllEntries() {
-  return BASE_ENTRIES.concat(customEntries);
+  const merged = BASE_ENTRIES
+    .filter(e => !hiddenIds.includes(e.id))
+    .map(e => overrides[e.id]
+      ? Object.assign({}, e, overrides[e.id], { _edited: true })
+      : e
+    );
+  return merged.concat(customEntries);
+}
+
+// Devuelve la versión "original" (sin override) de una entrada base
+function getBaseEntry(id) {
+  return BASE_ENTRIES.find(e => e.id === id) || null;
 }
 
 // ============ HELPERS ============
@@ -2536,6 +2702,7 @@ function renderSystemBadges(systems) {
 function renderEntry(e) {
   const sev = e.severity || 'info';
   const isCustom = !!e._custom;
+  const isEdited = !!e._edited; // entrada base con override local
   const systemsHtml = renderSystemBadges(e.system);
   const casesRows = (e.cases || []).map(c => `
     <tr>
@@ -2564,20 +2731,34 @@ function renderEntry(e) {
       <div class="tag-list">${programs}${files}</div>
     </div>` : '';
 
-  // Acciones solo para entradas custom
-  const actionsHtml = isCustom ? `
-    <div class="entry-actions">
+  // Acciones para entradas custom (eliminar definitivo) y base (eliminar = ocultar)
+  // Siempre se puede editar. Si es base con override, también se puede "Restaurar original".
+  const editBtn = `
       <button class="entry-action-btn" onclick="openModalForEdit('${escapeHtml(e.id)}')" title="Editar">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="m18.5 2.5 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
         Editar
-      </button>
-      <button class="entry-action-btn danger" onclick="deleteEntry('${escapeHtml(e.id)}')" title="Eliminar">
+      </button>`;
+  const deleteBtn = `
+      <button class="entry-action-btn danger" onclick="deleteEntry('${escapeHtml(e.id)}')" title="${isCustom ? 'Eliminar' : 'Ocultar de la wiki'}">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-        Eliminar
-      </button>
-    </div>` : '';
+        ${isCustom ? 'Eliminar' : 'Ocultar'}
+      </button>`;
+  const restoreBtn = isEdited ? `
+      <button class="entry-action-btn" onclick="restoreEntry('${escapeHtml(e.id)}')" title="Revertir edición y volver a la versión original">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>
+        Restaurar
+      </button>` : '';
 
-  const customBadge = isCustom ? '<span class="custom-badge">Creada por operador</span>' : '';
+  const actionsHtml = `
+    <div class="entry-actions">
+      ${editBtn}
+      ${restoreBtn}
+      ${deleteBtn}
+    </div>`;
+
+  const customBadge = isCustom
+    ? '<span class="custom-badge">Creada por operador</span>'
+    : (isEdited ? '<span class="edited-badge">Editada</span>' : '');
 
   // Banner de aviso para entradas críticas
   const criticalAlert = sev === 'critical' ? `
@@ -2802,11 +2983,14 @@ const modal = document.getElementById('entryModal');
 const modalTitle = document.getElementById('modalTitle');
 const form = document.getElementById('entryForm');
 let editingId = null;
+let editingIsBase = false; // true cuando se está editando una entrada de BASE_ENTRIES
 
 function openModal() {
   editingId = null;
+  editingIsBase = false;
   modalTitle.textContent = 'Nueva entrada MSGW';
   form.reset();
+  document.getElementById('f_id').readOnly = false;
   document.querySelector('input[name="severity"][value="warning"]').checked = true;
   document.getElementById('f_category_new_group').style.display = 'none';
   // Limpiar checkboxes de sistema
@@ -2817,13 +3001,22 @@ function openModal() {
 }
 
 function openModalForEdit(id) {
-  const entry = customEntries.find(e => e.id === id);
+  // Buscar primero en custom, después en la lista combinada (que ya aplica overrides)
+  let entry = customEntries.find(e => e.id === id);
+  let isBase = false;
+  if (!entry) {
+    entry = getAllEntries().find(e => e.id === id);
+    if (entry && !entry._custom) {
+      isBase = true;
+    }
+  }
   if (!entry) {
     showToast('No se encontró la entrada para editar.', 'error');
     return;
   }
   editingId = id;
-  modalTitle.textContent = 'Editar entrada: ' + id;
+  editingIsBase = isBase;
+  modalTitle.textContent = (isBase ? 'Editar entrada base: ' : 'Editar entrada: ') + id;
   form.reset();
   document.getElementById('f_id').value = entry.id || '';
   document.getElementById('f_id').readOnly = true; // No cambiar el ID al editar
@@ -2836,7 +3029,8 @@ function openModalForEdit(id) {
 
   // Severity
   const sev = entry.severity || 'warning';
-  document.querySelector(`input[name="severity"][value="${sev}"]`).checked = true;
+  const sevInput = document.querySelector(`input[name="severity"][value="${sev}"]`);
+  if (sevInput) sevInput.checked = true;
 
   // Categoría
   const knownCats = Array.from(document.getElementById('f_category').options).map(o => o.value);
@@ -2846,7 +3040,7 @@ function openModalForEdit(id) {
   } else {
     document.getElementById('f_category').value = '__new__';
     document.getElementById('f_category_new_group').style.display = '';
-    document.getElementById('f_category_new').value = entry.category;
+    document.getElementById('f_category_new').value = entry.category || '';
   }
 
   // Sistema (checkboxes)
@@ -2854,7 +3048,7 @@ function openModalForEdit(id) {
     cb.checked = (entry.system || []).includes(cb.value);
   });
 
-  // Caso documentado (si existe)
+  // Caso documentado (si existe — solo el primero; el form soporta uno solo)
   if (entry.cases && entry.cases.length > 0) {
     const c = entry.cases[0];
     document.getElementById('f_case_date').value = c.date || '';
@@ -2870,6 +3064,7 @@ function openModalForEdit(id) {
 function closeModal() {
   modal.classList.remove('open');
   editingId = null;
+  editingIsBase = false;
   document.getElementById('f_id').readOnly = false;
 }
 
@@ -2965,44 +3160,125 @@ form.addEventListener('submit', (ev) => {
   };
 
   if (editingId) {
-    // Editar existente
-    const idx = customEntries.findIndex(e => e.id === editingId);
-    if (idx >= 0) {
-      entry._createdAt = customEntries[idx]._createdAt;
-      customEntries[idx] = entry;
+    if (editingIsBase) {
+      // Editar una entrada BASE: guardar como override local
+      // (no tocamos BASE_ENTRIES — se puede revertir con "Restaurar")
+      const prev = overrides[editingId] || {};
+      overrides[editingId] = Object.assign({}, entry, {
+        _custom: false,
+        _editedAt: new Date().toISOString(),
+        _createdAt: prev._createdAt || new Date().toISOString(),
+      });
+      delete overrides[editingId]._custom; // override NO es custom
+      if (saveOverrides(overrides)) {
+        showToast('Entrada base actualizada: ' + id, 'success');
+        closeModal();
+        rebuildSidebarAndFilters();
+        renderAll(currentFilter, searchInput.value);
+      } else {
+        showToast('Error al guardar la edición en el navegador.', 'error');
+      }
+    } else {
+      // Editar una entrada custom existente
+      const idx = customEntries.findIndex(e => e.id === editingId);
+      if (idx >= 0) {
+        entry._createdAt = customEntries[idx]._createdAt;
+        customEntries[idx] = entry;
+      }
+      if (saveCustomEntries(customEntries)) {
+        showToast('Entrada actualizada: ' + id, 'success');
+        closeModal();
+        rebuildSidebarAndFilters();
+        renderAll(currentFilter, searchInput.value);
+      } else {
+        showToast('Error al guardar en el navegador.', 'error');
+      }
     }
-    showToast('Entrada actualizada: ' + id, 'success');
   } else {
-    // Crear nueva
+    // Crear nueva entrada custom
     customEntries.push(entry);
-    showToast('Entrada creada: ' + id, 'success');
-  }
-
-  if (saveCustomEntries(customEntries)) {
-    closeModal();
-    rebuildSidebarAndFilters();
-    renderAll(currentFilter, searchInput.value);
-  } else {
-    showToast('Error al guardar en el navegador.', 'error');
+    if (saveCustomEntries(customEntries)) {
+      showToast('Entrada creada: ' + id, 'success');
+      closeModal();
+      rebuildSidebarAndFilters();
+      renderAll(currentFilter, searchInput.value);
+    } else {
+      showToast('Error al guardar en el navegador.', 'error');
+    }
   }
 });
 
-// Eliminar entrada
+// Eliminar / ocultar entrada
 function deleteEntry(id) {
-  if (!confirm('¿Eliminar la entrada "' + id + '"? Esta acción no se puede deshacer.')) return;
-  customEntries = customEntries.filter(e => e.id !== id);
-  if (saveCustomEntries(customEntries)) {
-    showToast('Entrada eliminada: ' + id, 'success');
+  // ¿Es custom o es base?
+  const isCustom = customEntries.some(e => e.id === id);
+  const isBase = BASE_ENTRIES.some(e => e.id === id);
+
+  if (isCustom) {
+    if (!confirm('¿Eliminar DEFINITIVAMENTE la entrada "' + id + '"? Esta acción no se puede deshacer.')) return;
+    customEntries = customEntries.filter(e => e.id !== id);
+    if (saveCustomEntries(customEntries)) {
+      showToast('Entrada eliminada: ' + id, 'success');
+      rebuildSidebarAndFilters();
+      renderAll(currentFilter, searchInput.value);
+    } else {
+      showToast('Error al eliminar.', 'error');
+    }
+  } else if (isBase) {
+    if (!confirm('¿Ocultar la entrada base "' + id + '" de la wiki? Podés restaurarla desde el botón "Gestionar" en la barra superior.')) return;
+    if (!hiddenIds.includes(id)) hiddenIds.push(id);
+    if (saveHiddenIds(hiddenIds)) {
+      showToast('Entrada oculta: ' + id, 'success');
+      rebuildSidebarAndFilters();
+      renderAll(currentFilter, searchInput.value);
+    } else {
+      showToast('Error al ocultar.', 'error');
+    }
+  } else {
+    showToast('No se encontró la entrada.', 'error');
+  }
+}
+
+// Restaurar una entrada base a su versión original (borra override)
+function restoreEntry(id) {
+  if (!confirm('¿Revertir la edición local de "' + id + '" y volver a la versión original de la wiki?')) return;
+  let changed = false;
+  if (overrides[id]) {
+    delete overrides[id];
+    saveOverrides(overrides);
+    changed = true;
+  }
+  if (hiddenIds.includes(id)) {
+    hiddenIds = hiddenIds.filter(x => x !== id);
+    saveHiddenIds(hiddenIds);
+    changed = true;
+  }
+  if (changed) {
+    showToast('Entrada restaurada: ' + id, 'success');
     rebuildSidebarAndFilters();
     renderAll(currentFilter, searchInput.value);
   } else {
-    showToast('Error al eliminar.', 'error');
+    showToast('No había cambios locales para revertir.', 'info');
   }
+}
+
+// Restaurar TODAS las entradas base a su estado original (útil para "reset")
+function restoreAllBaseEntries() {
+  if (!confirm('¿Revertir TODAS las ediciones locales y mostrar TODAS las entradas base originales? Esto no afecta a las entradas creadas por el operador.')) return;
+  overrides = {};
+  hiddenIds = [];
+  saveOverrides(overrides);
+  saveHiddenIds(hiddenIds);
+  showToast('Entradas base restauradas a su versión original.', 'success');
+  rebuildSidebarAndFilters();
+  renderAll(currentFilter, searchInput.value);
 }
 
 // Exponer para onclick
 window.openModalForEdit = openModalForEdit;
 window.deleteEntry = deleteEntry;
+window.restoreEntry = restoreEntry;
+window.restoreAllBaseEntries = restoreAllBaseEntries;
 
 // ============ TOAST ============
 let toastTimer = null;
@@ -3030,6 +3306,101 @@ document.getElementById('fabNewEntry').addEventListener('click', openModal);
 document.getElementById('modalClose').addEventListener('click', closeModal);
 document.getElementById('modalCancel').addEventListener('click', closeModal);
 
+// ============ MODAL GESTIONAR ============
+const manageModal = document.getElementById('manageModal');
+const manageModalBody = document.getElementById('manageModalBody');
+
+function openManageModal() {
+  populateManageModal();
+  manageModal.classList.add('open');
+}
+
+function closeManageModal() {
+  manageModal.classList.remove('open');
+}
+
+function populateManageModal() {
+  const editedIds = Object.keys(overrides);
+  const hidden = hiddenIds.slice();
+  const totalLocal = editedIds.length + hidden.length;
+
+  let html = '';
+
+  if (totalLocal === 0) {
+    html = `
+      <div style="padding:24px;text-align:center;color:var(--text-muted);">
+        <div style="font-size:36px;margin-bottom:8px;">✓</div>
+        <p>No hay cambios locales sobre entradas base.<br>
+        Todas las entradas se muestran en su versión original.</p>
+      </div>`;
+  } else {
+    if (editedIds.length > 0) {
+      html += `<h4 style="margin:0 0 8px;font-size:13px;text-transform:uppercase;letter-spacing:0.05em;color:var(--text-muted);">Editadas localmente (${editedIds.length})</h4>`;
+      html += '<div class="manage-list">';
+      editedIds.forEach(id => {
+        const base = getBaseEntry(id) || {};
+        const ov = overrides[id];
+        const editedAt = ov._editedAt ? new Date(ov._editedAt).toLocaleString('es-AR', { timeZone: 'America/Argentina/Buenos_Aires' }) : '—';
+        html += `
+          <div class="manage-item">
+            <div class="manage-item-main">
+              <span class="manage-item-code">${escapeHtml(id)}</span>
+              <span class="manage-item-title">${escapeHtml(ov.title || base.title || '')}</span>
+            </div>
+            <div class="manage-item-meta">Editada: ${escapeHtml(editedAt)}</div>
+            <button class="entry-action-btn" onclick="restoreEntry('${escapeHtml(id)}'); populateManageModal();">Restaurar</button>
+          </div>`;
+      });
+      html += '</div>';
+    }
+    if (hidden.length > 0) {
+      html += `<h4 style="margin:16px 0 8px;font-size:13px;text-transform:uppercase;letter-spacing:0.05em;color:var(--text-muted);">Ocultas (${hidden.length})</h4>`;
+      html += '<div class="manage-list">';
+      hidden.forEach(id => {
+        const base = getBaseEntry(id) || {};
+        html += `
+          <div class="manage-item">
+            <div class="manage-item-main">
+              <span class="manage-item-code">${escapeHtml(id)}</span>
+              <span class="manage-item-title">${escapeHtml(base.title || '(entrada base eliminada)')}</span>
+            </div>
+            <div class="manage-item-meta">Oculta de la wiki</div>
+            <button class="entry-action-btn" onclick="restoreEntry('${escapeHtml(id)}'); populateManageModal();">Mostrar</button>
+          </div>`;
+      });
+      html += '</div>';
+    }
+  }
+
+  // Resumen al final
+  const baseTotal = BASE_ENTRIES.length;
+  const visibleBase = baseTotal - hiddenIds.length;
+  const customTotal = customEntries.length;
+  html += `
+    <div style="margin-top:20px;padding:12px 14px;background:var(--bg-code);border-radius:6px;font-size:12px;color:var(--text-muted);">
+      <strong>Resumen:</strong> ${visibleBase}/${baseTotal} entradas base visibles ·
+      ${editedIds.length} editadas ·
+      ${customTotal} creadas por el operador
+    </div>`;
+
+  manageModalBody.innerHTML = html;
+}
+
+document.getElementById('btnManageEntries').addEventListener('click', openManageModal);
+document.getElementById('manageModalClose').addEventListener('click', closeManageModal);
+document.getElementById('manageModalCloseBtn').addEventListener('click', closeManageModal);
+document.getElementById('btnRestoreAll').addEventListener('click', () => {
+  restoreAllBaseEntries();
+  populateManageModal();
+});
+
+manageModal.addEventListener('click', (ev) => {
+  if (ev.target === manageModal) closeManageModal();
+});
+
+// Exponer populateManageModal para que los botones "Restaurar" individuales lo llamen
+window.populateManageModal = populateManageModal;
+
 // Cerrar al hacer click fuera del modal
 modal.addEventListener('click', (ev) => {
   if (ev.target === modal) closeModal();
@@ -3037,7 +3408,10 @@ modal.addEventListener('click', (ev) => {
 
 // Cerrar con ESC
 document.addEventListener('keydown', (ev) => {
-  if (ev.key === 'Escape' && modal.classList.contains('open')) closeModal();
+  if (ev.key === 'Escape') {
+    if (modal.classList.contains('open')) closeModal();
+    if (manageModal.classList.contains('open')) closeManageModal();
+  }
 });
 
 // Toggle campo "nueva categoría"
