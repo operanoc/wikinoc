@@ -729,9 +729,214 @@ pre::-webkit-scrollbar-thumb { background: #475569; border-radius: 3px; }
 .toast.show { opacity: 1; transform: translateX(-50%) translateY(-4px); }
 .toast.success { background: #059669; }
 .toast.error { background: var(--severity-critical); }
+
+/* ============ LOGIN ============ */
+.login-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: radial-gradient(circle at 30% 20%, #1e293b 0%, #0f172a 70%, #020617 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  min-height: 100vh;
+}
+.login-overlay.hidden {
+  display: none;
+}
+.login-card {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(148, 163, 184, 0.15);
+  border-radius: 16px;
+  padding: 40px 36px 32px;
+  width: 100%;
+  max-width: 380px;
+  box-shadow: 0 20px 50px -10px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.02);
+  backdrop-filter: blur(8px);
+}
+.login-logo {
+  width: 56px;
+  height: 56px;
+  margin: 0 auto 18px;
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  box-shadow: 0 8px 24px -4px rgba(37, 99, 235, 0.5);
+}
+.login-card h2 {
+  color: #f1f5f9;
+  font-size: 20px;
+  font-weight: 600;
+  text-align: center;
+  margin-bottom: 4px;
+  letter-spacing: -0.01em;
+}
+.login-card .login-sub {
+  color: #94a3b8;
+  font-size: 12px;
+  text-align: center;
+  margin-bottom: 28px;
+}
+.login-field {
+  margin-bottom: 18px;
+}
+.login-field label {
+  display: block;
+  color: #cbd5e1;
+  font-size: 12px;
+  font-weight: 500;
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.login-field input {
+  width: 100%;
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  color: #f1f5f9;
+  padding: 12px 14px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: inherit;
+  transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
+  outline: none;
+}
+.login-field input::placeholder {
+  color: #64748b;
+}
+.login-field input:focus {
+  border-color: #2563eb;
+  background: rgba(15, 23, 42, 0.9);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+.login-field.has-error input {
+  border-color: #ef4444;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15);
+}
+.login-error {
+  color: #fca5a5;
+  font-size: 12px;
+  margin-top: 6px;
+  min-height: 14px;
+}
+.login-submit {
+  width: 100%;
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  color: #fff;
+  border: none;
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  margin-top: 6px;
+  transition: transform 0.05s, box-shadow 0.15s, filter 0.15s;
+  box-shadow: 0 4px 12px -2px rgba(37, 99, 235, 0.4);
+}
+.login-submit:hover {
+  filter: brightness(1.1);
+  box-shadow: 0 6px 16px -2px rgba(37, 99, 235, 0.5);
+}
+.login-submit:active {
+  transform: translateY(1px);
+}
+.login-footer {
+  margin-top: 22px;
+  text-align: center;
+  color: #64748b;
+  font-size: 11px;
+  border-top: 1px solid rgba(148, 163, 184, 0.1);
+  padding-top: 14px;
+}
+
+/* Botón logout en header */
+.btn-logout {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.08);
+  color: #e2e8f0;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+.btn-logout:hover {
+  background: rgba(239, 68, 68, 0.15);
+  border-color: rgba(239, 68, 68, 0.4);
+  color: #fca5a5;
+}
+.btn-logout svg {
+  width: 14px;
+  height: 14px;
+}
+.user-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(34, 197, 94, 0.12);
+  color: #86efac;
+  border: 1px solid rgba(34, 197, 94, 0.25);
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 500;
+}
+.user-chip::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #22c55e;
+  box-shadow: 0 0 6px rgba(34, 197, 94, 0.6);
+}
+
+/* Cuando el body está bloqueado por login */
+body.auth-locked {
+  overflow: hidden;
+}
 </style>
 </head>
-<body>
+<body class="auth-locked">
+
+<!-- LOGIN OVERLAY -->
+<div class="login-overlay" id="loginOverlay">
+  <form class="login-card" id="loginForm" autocomplete="off">
+    <div class="login-logo">N</div>
+    <h2>Wiki NOC</h2>
+    <div class="login-sub">MSGW · AS400 / JDE Edwards</div>
+
+    <div class="login-field" id="loginUserGroup">
+      <label for="loginUser">Usuario</label>
+      <input type="text" id="loginUser" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Ingresá tu usuario">
+      <div class="login-error" id="loginUserError"></div>
+    </div>
+
+    <div class="login-field" id="loginPassGroup">
+      <label for="loginPass">Contraseña</label>
+      <input type="password" id="loginPass" autocomplete="off" placeholder="Ingresá tu contraseña">
+      <div class="login-error" id="loginPassError"></div>
+    </div>
+
+    <button type="submit" class="login-submit" id="loginSubmit">Ingresar</button>
+
+    <div class="login-footer">
+      Acceso restringido · Solo personal NOC autorizado
+    </div>
+  </form>
+</div>
 
 <header>
   <div class="header-row">
@@ -748,6 +953,11 @@ pre::-webkit-scrollbar-thumb { background: #475569; border-radius: 3px; }
         <div>16 mensajes base</div>
         <div>Última actualización: 2026-07-15</div>
       </div>
+      <span class="user-chip" id="userChip">nocopera</span>
+      <button class="btn-logout" id="btnLogout" title="Cerrar sesión">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        Salir
+      </button>
     </div>
   </div>
 </header>
@@ -2010,6 +2220,106 @@ document.getElementById('f_category').addEventListener('change', (ev) => {
   if (!isNew) document.getElementById('f_category_new').value = '';
 });
 
+// ============ AUTH / LOGIN ============
+const AUTH_USER = 'nocopera';
+const AUTH_PASS = 'operasepsa';
+const AUTH_KEY = 'msgw_wiki_auth_v1';
+
+const loginOverlay = document.getElementById('loginOverlay');
+const loginForm = document.getElementById('loginForm');
+const loginUserInput = document.getElementById('loginUser');
+const loginPassInput = document.getElementById('loginPass');
+const loginUserGroup = document.getElementById('loginUserGroup');
+const loginPassGroup = document.getElementById('loginPassGroup');
+const loginUserError = document.getElementById('loginUserError');
+const loginPassError = document.getElementById('loginPassError');
+const btnLogout = document.getElementById('btnLogout');
+const userChip = document.getElementById('userChip');
+
+function isAuthed() {
+  try {
+    const raw = sessionStorage.getItem(AUTH_KEY);
+    if (!raw) return false;
+    const parsed = JSON.parse(raw);
+    return parsed && parsed.user === AUTH_USER && parsed.ts && (Date.now() - parsed.ts < 12 * 60 * 60 * 1000);
+  } catch (err) {
+    return false;
+  }
+}
+
+function showWiki() {
+  loginOverlay.classList.add('hidden');
+  document.body.classList.remove('auth-locked');
+  if (userChip) userChip.textContent = AUTH_USER;
+  // Re-render por si las dimensiones cambiaron con el overlay encima
+  try { rebuildSidebarAndFilters(); renderAll(currentFilter, searchInput.value); } catch (e) {}
+  // Foco al buscador para usar la wiki de una
+  setTimeout(() => { try { searchInput.focus(); } catch (e) {} }, 50);
+}
+
+function showLogin() {
+  loginOverlay.classList.remove('hidden');
+  document.body.classList.add('auth-locked');
+  loginForm.reset();
+  loginUserGroup.classList.remove('has-error');
+  loginPassGroup.classList.remove('has-error');
+  loginUserError.textContent = '';
+  loginPassError.textContent = '';
+  setTimeout(() => loginUserInput.focus(), 50);
+}
+
+function doLogin(user, pass) {
+  // Comparación case-sensitive según spec (todo minúscula)
+  if (user === AUTH_USER && pass === AUTH_PASS) {
+    sessionStorage.setItem(AUTH_KEY, JSON.stringify({ user: AUTH_USER, ts: Date.now() }));
+    return true;
+  }
+  return false;
+}
+
+function doLogout() {
+  sessionStorage.removeItem(AUTH_KEY);
+  showLogin();
+}
+
+loginForm.addEventListener('submit', (ev) => {
+  ev.preventDefault();
+  const user = loginUserInput.value.trim();
+  const pass = loginPassInput.value;
+
+  loginUserGroup.classList.remove('has-error');
+  loginPassGroup.classList.remove('has-error');
+  loginUserError.textContent = '';
+  loginPassError.textContent = '';
+
+  let valid = true;
+  if (!user) {
+    loginUserGroup.classList.add('has-error');
+    loginUserError.textContent = 'Ingresá el usuario.';
+    valid = false;
+  }
+  if (!pass) {
+    loginPassGroup.classList.add('has-error');
+    loginPassError.textContent = 'Ingresá la contraseña.';
+    valid = false;
+  }
+  if (!valid) return;
+
+  if (doLogin(user, pass)) {
+    showWiki();
+  } else {
+    loginPassGroup.classList.add('has-error');
+    loginUserGroup.classList.add('has-error');
+    loginPassError.textContent = 'Usuario o contraseña incorrectos.';
+    loginPassInput.value = '';
+    loginPassInput.focus();
+  }
+});
+
+btnLogout.addEventListener('click', () => {
+  if (confirm('¿Cerrar sesión?')) doLogout();
+});
+
 // ============ INIT ============
 rebuildSidebarAndFilters();
 renderAll();
@@ -2017,6 +2327,13 @@ renderAll();
 // Mostrar aviso si hay entradas custom
 if (customEntries.length > 0) {
   console.log('Entradas custom cargadas:', customEntries.length);
+}
+
+// Aplicar estado de autenticación al cargar
+if (isAuthed()) {
+  showWiki();
+} else {
+  showLogin();
 }
 </script>
 
