@@ -337,6 +337,70 @@ main {
   font-weight: 600;
 }
 
+/* Banner de workaround activo: acción temporal hasta fecha de solución definitiva */
+.workaround-alert {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+  border: 1px solid #fcd34d;
+  border-left: 4px solid #d97706;
+  border-radius: 8px;
+  padding: 12px 14px;
+  margin-bottom: 16px;
+  box-shadow: 0 1px 2px rgba(217, 119, 6, 0.06);
+}
+.workaround-alert-icon {
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #d97706;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 1;
+  margin-top: 1px;
+}
+.workaround-alert-content {
+  flex: 1;
+  min-width: 0;
+}
+.workaround-alert-title {
+  color: #92400e;
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 0.01em;
+  margin-bottom: 2px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.workaround-alert-until {
+  display: inline-block;
+  background: #d97706;
+  color: #fff;
+  padding: 1px 8px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+.workaround-alert-text {
+  color: #78350f;
+  font-size: 12.5px;
+  line-height: 1.5;
+}
+.workaround-alert-text strong {
+  color: #92400e;
+  font-weight: 600;
+}
+
 /* ============ SISTEMA (Pinot / Semillón / Merlot / Regdrs / Regional) ============ */
 .system-badges {
   display: inline-flex;
@@ -1882,6 +1946,12 @@ const BASE_ENTRIES = [
     "files": [
       "F57607LE"
     ],
+    "workaround": {
+      "active": true,
+      "until": "21/07/2026",
+      "source": "Ricardo Caldeiro — mail 15/07/2026 (INC 0041043)",
+      "text": "Responder al mensaje con <strong>G</strong>. El job continúa y finaliza normalmente. Solución definitiva prevista para el 21/07/2026."
+    },
     "resolution": [
       "WORKAROUND OFICIAL (hasta 21/07/2026 — fecha prevista de solución definitiva, confirmada por Ricardo Caldeiro): responder al mensaje con 'G'. El job finaliza normalmente.",
       "Hacer WRKJOB sobre el job en MSGW y verificar que el mensaje sea RNX1221 sobre F57607LE / P57608 (sentencia 0000001881).",
@@ -2189,6 +2259,20 @@ function renderEntry(e) {
       </div>
     </div>` : '';
 
+  // Banner de workaround activo (acción temporal hasta fecha de solución definitiva)
+  const wa = e.workaround;
+  const workaroundAlert = (wa && wa.active) ? `
+    <div class="workaround-alert" role="status">
+      <div class="workaround-alert-icon" aria-hidden="true">⚠</div>
+      <div class="workaround-alert-content">
+        <div class="workaround-alert-title">
+          WORKAROUND ACTIVO
+          ${wa.until ? `<span class="workaround-alert-until">hasta ${escapeHtml(wa.until)}</span>` : ''}
+        </div>
+        <div class="workaround-alert-text">${wa.text || ''}${wa.source ? `<br><span style="font-size:11px;color:#a16207;opacity:0.85;">Fuente: ${escapeHtml(wa.source)}</span>` : ''}</div>
+      </div>
+    </div>` : '';
+
   // Para críticos, forzar como primer paso de resolución el aviso a Ricardo
   let resolutionList = (e.resolution || []).slice();
   if (sev === 'critical') {
@@ -2213,6 +2297,7 @@ function renderEntry(e) {
       </div>
       <div class="entry-body">
         ${criticalAlert}
+        ${workaroundAlert}
         <div class="entry-section">
           <h4>Mensaje</h4>
           <pre class="message-block">${highlightPlaceholders(e.message)}</pre>
@@ -2360,13 +2445,16 @@ function renderAll(filter = 'all', query = '') {
       if (!systems.includes(currentSystemFilter)) continue;
     }
     if (q) {
+      const wa = e.workaround;
+      const waText = wa ? [wa.text || '', wa.until || '', wa.source || ''].join(' ') : '';
       const haystack = [
         e.id, e.title, e.category, e.message, e.cause,
         (e.programs || []).join(' '),
         (e.files || []).join(' '),
         (e.resolution || []).join(' '),
         (e.cases || []).map(c => (c.job || '') + ' ' + (c.ticket || '') + ' ' + (c.action || '')).join(' '),
-        (e.system || []).join(' ')
+        (e.system || []).join(' '),
+        waText
       ].join(' \n').toLowerCase();
       if (!haystack.includes(q)) continue;
     }
