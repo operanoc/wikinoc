@@ -109,6 +109,7 @@ header .meta {
   gap: 6px;
   margin-top: 10px;
   flex-wrap: wrap;
+  align-items: center;
 }
 .search-bar .filter-btn {
   padding: 4px 12px;
@@ -131,6 +132,21 @@ header .meta {
   color: var(--text-muted);
   font-size: 12px;
   align-self: center;
+}
+/* Separador dentro de la barra de filtros */
+.search-bar .filter-divider {
+  width: 1px;
+  height: 16px;
+  background: var(--border-strong);
+  margin: 0 4px;
+}
+.search-bar .filter-group-label {
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-right: 2px;
 }
 
 /* LAYOUT */
@@ -382,35 +398,21 @@ main {
   border-color: #cbd5e1;
 }
 
-/* Filtros de sistema (chips arriba del buscador) */
+/* Filtros de sistema (chips integrados en la barra de búsqueda) */
 .system-filters {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  align-items: center;
-  padding: 8px 28px 0;
-  background: #fff;
-  border-bottom: 1px solid var(--border);
-}
-.system-filters .label {
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  margin-right: 4px;
+  display: contents;
 }
 .sys-filter-btn {
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  padding: 5px 10px;
+  padding: 4px 11px;
   border-radius: 999px;
-  font-size: 11.5px;
+  font-size: 12px;
   font-weight: 500;
   border: 1px solid var(--border-strong);
   background: #fff;
-  color: var(--text);
+  color: var(--text-muted);
   cursor: pointer;
   font-family: inherit;
   transition: background 0.12s, border-color 0.12s, color 0.12s;
@@ -418,25 +420,25 @@ main {
 .sys-filter-btn:hover {
   background: #f8fafc;
   border-color: var(--text-muted);
+  color: var(--text);
 }
 .sys-filter-btn .dot {
-  width: 7px;
-  height: 7px;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
-  background: currentColor;
 }
-.sys-filter-btn .dot.pinot { color: #1d4ed8; }
-.sys-filter-btn .dot.semillon { color: #15803d; }
-.sys-filter-btn .dot.merlot { color: #be185d; }
-.sys-filter-btn .dot.regdrs { color: #c2410c; }
-.sys-filter-btn .dot.regional { color: #6d28d9; }
+.sys-filter-btn .dot.pinot { background: #1d4ed8; }
+.sys-filter-btn .dot.semillon { background: #15803d; }
+.sys-filter-btn .dot.merlot { background: #be185d; }
+.sys-filter-btn .dot.regdrs { background: #c2410c; }
+.sys-filter-btn .dot.regional { background: #6d28d9; }
 .sys-filter-btn.active {
   background: #1e293b;
   color: #fff;
   border-color: #1e293b;
 }
 .sys-filter-btn.active .dot {
-  background: #fff;
+  background: #fff !important;
 }
 
 .entry-section { margin-bottom: 16px; }
@@ -1175,17 +1177,16 @@ body.auth-locked {
 </header>
 
 <div class="search-bar">
-  <input type="text" id="searchInput" placeholder="Buscar por código (RNX1221), mensaje, programa, archivo o job…" autocomplete="off">
-  <div class="filters">
+  <input type="text" id="searchInput" placeholder="Buscar por código (RNX1221), mensaje, programa, archivo, job o sistema (Pinot, Semillón…)…" autocomplete="off">
+  <div class="filters" id="filterBar">
     <button class="filter-btn active" data-filter="all">Todos</button>
     <button class="filter-btn" data-filter="Errores de Archivo / Operación">Errores de Archivo / Operación</button><button class="filter-btn" data-filter="Stream File / Entidades">Stream File / Entidades</button><button class="filter-btn" data-filter="Errores de Fecha / Hora">Errores de Fecha / Hora</button><button class="filter-btn" data-filter="Errores de Acceso / IFS">Errores de Acceso / IFS</button><button class="filter-btn" data-filter="Errores de Array / Índice">Errores de Array / Índice</button><button class="filter-btn" data-filter="Backups">Backups</button><button class="filter-btn" data-filter="Jobs de Chequeo / Batch">Jobs de Chequeo / Batch</button><button class="filter-btn" data-filter="Procedimientos Especiales">Procedimientos Especiales</button>
+    <span class="filter-divider"></span>
+    <span class="filter-group-label">Sistema:</span>
+    <button class="sys-filter-btn active" data-sys="all">Todos</button>
+    <!-- Los chips de sistema se inyectan acá dinámicamente por JS -->
     <span class="result-count" id="resultCount"></span>
   </div>
-</div>
-
-<div class="system-filters" id="systemFilters">
-  <span class="label">Sistema:</span>
-  <!-- Los chips se generan dinámicamente por JS -->
 </div>
 
 <div class="layout">
@@ -2236,15 +2237,18 @@ function rebuildSidebarAndFilters() {
   all.forEach(e => { if (e.category && !cats.includes(e.category)) cats.push(e.category); });
 
   // Rebuild filter buttons
-  const filtersContainer = document.querySelector('.search-bar .filters');
-  const resultCount = document.getElementById('resultCount');
-  const existingActive = document.querySelector('.filter-btn.active');
+  const filtersContainer = document.getElementById('filterBar');
+  const existingActive = filtersContainer.querySelector('.filter-btn.active');
   const currentActiveFilter = existingActive ? existingActive.dataset.filter : 'all';
 
   let buttonsHtml = '<button class="filter-btn' + (currentActiveFilter === 'all' ? ' active' : '') + '" data-filter="all">Todos</button>';
   cats.forEach(c => {
     buttonsHtml += `<button class="filter-btn${currentActiveFilter === c ? ' active' : ''}" data-filter="${escapeHtml(c)}">${escapeHtml(c)}</button>`;
   });
+  // Sección de sistema (chips se llenan por rebuildSystemFilters)
+  buttonsHtml += '<span class="filter-divider"></span>';
+  buttonsHtml += '<span class="filter-group-label">Sistema:</span>';
+  buttonsHtml += `<button class="sys-filter-btn${currentSystemFilter === 'all' ? ' active' : ''}" data-sys="all">Todos</button>`;
   buttonsHtml += '<span class="result-count" id="resultCount"></span>';
   filtersContainer.innerHTML = buttonsHtml;
 
@@ -2298,25 +2302,43 @@ function rebuildSystemFilters() {
   // Mantener orden canónico: Pinot, Semillón, Merlot, Regdrs, Regional
   const ordered = SYSTEMS.filter(s => present.has(s));
 
-  const container = document.getElementById('systemFilters');
-  if (!container) return;
+  // Buscar el botón "Todos" de sistema dentro del filterBar
+  const filterBar = document.getElementById('filterBar');
+  if (!filterBar) return;
 
-  let html = '<span class="label">Sistema:</span>';
-  html += `<button class="sys-filter-btn${currentSystemFilter === 'all' ? ' active' : ''}" data-sys="all">Todos</button>`;
+  // Eliminar chips de sistema previos (todos los .sys-filter-btn salvo el "Todos")
+  filterBar.querySelectorAll('.sys-filter-btn:not([data-sys="all"])').forEach(b => b.remove());
+
+  // Insertar nuevos chips justo después del botón "Todos" de sistema
+  const allSysBtn = filterBar.querySelector('.sys-filter-btn[data-sys="all"]');
+  if (!allSysBtn) return;
+
+  // Reflejar estado activo del "Todos"
+  if (currentSystemFilter === 'all') {
+    allSysBtn.classList.add('active');
+  } else {
+    allSysBtn.classList.remove('active');
+  }
+
+  let refNode = allSysBtn;
   ordered.forEach(s => {
     const slug = systemSlug(s);
-    const isActive = currentSystemFilter === s ? ' active' : '';
-    html += `<button class="sys-filter-btn${isActive}" data-sys="${escapeHtml(s)}"><span class="dot ${slug}"></span>${escapeHtml(s)}</button>`;
+    const btn = document.createElement('button');
+    btn.className = 'sys-filter-btn' + (currentSystemFilter === s ? ' active' : '');
+    btn.dataset.sys = s;
+    btn.innerHTML = `<span class="dot ${slug}"></span>${escapeHtml(s)}`;
+    refNode.after(btn);
+    refNode = btn;
   });
-  container.innerHTML = html;
 
-  container.querySelectorAll('.sys-filter-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
+  // Re-attach listeners para TODOS los botones de sistema (incluido "Todos")
+  filterBar.querySelectorAll('.sys-filter-btn').forEach(btn => {
+    btn.onclick = () => {
       currentSystemFilter = btn.dataset.sys;
-      container.querySelectorAll('.sys-filter-btn').forEach(b => b.classList.remove('active'));
+      filterBar.querySelectorAll('.sys-filter-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       renderAll(currentFilter, searchInput.value);
-    });
+    };
   });
 }
 
