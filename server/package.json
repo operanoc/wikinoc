@@ -1,7 +1,7 @@
 {
   "name": "wikinoc-ai-server",
-  "version": "1.1.0",
-  "description": "Backend IA para la Wiki NOC — usa Groq SDK (llama-3.3-70b-versatile) para responder preguntas sobre la wiki MSGW AS400/JDE",
+  "version": "1.0.0",
+  "description": "Backend IA para la Wiki NOC — usa z-ai-web-dev-sdk para responder preguntas sobre la wiki MSGW AS400/JDE",
   "type": "module",
   "main": "server.js",
   "scripts": {
@@ -9,9 +9,9 @@
     "dev": "node --watch server.js"
   },
   "dependencies": {
-    "cors": "^2.8.5",
     "express": "^4.19.2",
-    "groq-sdk": "^0.7.0"
+    "cors": "^2.8.5",
+    "z-ai-web-dev-sdk": "latest"
   },
   "engines": {
     "node": ">=18"
