@@ -1613,8 +1613,8 @@ body.auth-locked {
             <span class="form-error">El código es obligatorio.</span>
           </div>
           <div class="form-group">
-            <label for="f_severity">Severidad <span class="req">*</span></label>
-            <div class="severity-radio-group">
+            <label id="f_severity_label">Severidad <span class="req">*</span></label>
+            <div class="severity-radio-group" role="radiogroup" aria-labelledby="f_severity_label">
               <div class="severity-radio">
                 <input type="radio" id="sev_info" name="severity" value="info">
                 <label for="sev_info" class="sev-info">Info</label>
