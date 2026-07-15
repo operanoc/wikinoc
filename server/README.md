@@ -1,10 +1,10 @@
 # Wiki NOC — Servidor IA
 
-Backend pequeño en Node.js/Express que expone un endpoint `/api/chat` consumido por el panel de chat IA embebido en `index.html`. Usa **z-ai-web-dev-sdk** (GLM-4) para responder consultas de los operadores con **TODO el contenido de la wiki** como contexto.
+Backend pequeño en Node.js/Express que expone un endpoint `/api/chat` consumido por el panel de chat IA embebido en `index.html`. Usa **Groq SDK** (modelo `llama-3.3-70b-versatile` por defecto) para responder consultas de los operadores con **TODO el contenido de la wiki** como contexto.
 
 ## Por qué un backend aparte
 
-La wiki es un único HTML estático (`index.html`) que se puede abrir desde `file://`, servir con cualquier HTTP server, o publicar en GitHub Pages. Pero el SDK `z-ai-web-dev-sdk` **sólo funciona en backend** (necesita credenciales que no pueden exponerse en el navegador). Por eso el chat IA hace fetch a `http://127.0.0.1:8787/api/chat`, y ese endpoint es el que habla con el LLM.
+La wiki es un único HTML estático (`index.html`) que se puede abrir desde `file://`, servir con cualquier HTTP server, o publicar en GitHub Pages. Pero el SDK `groq-sdk` **sólo funciona en backend** (necesita la API key de Groq que no puede exponerse en el navegador). Por eso el chat IA hace fetch a `http://127.0.0.1:8787/api/chat`, y ese endpoint es el que habla con el LLM.
 
 ## Instalación
 
@@ -17,15 +17,34 @@ Requiere Node.js >= 18.
 
 ## Cómo correrlo
 
+1. Obtené tu API key de Groq en https://console.groq.com/keys (es gratis, sólo requiere login con cuenta Google/GitHub).
+2. Exportala como variable de entorno:
+
+```bash
+export GROQ_API_KEY="gsk_tu_api_key_aqui"
+```
+
+3. Arrancá el server:
+
 ```bash
 npm start
 ```
 
-Por defecto escucha en `http://127.0.0.1:8787`. Para cambiar puerto o host:
+Por defecto escucha en `http://127.0.0.1:8787` y usa el modelo `llama-3.3-70b-versatile`. Para cambiar puerto, host o modelo:
 
 ```bash
-WIKINOC_AI_PORT=9000 WIKINOC_AI_HOST=0.0.0.0 npm start
+GROQ_API_KEY="gsk_..." \
+GROQ_MODEL="llama-3.1-8b-instant" \
+WIKINOC_AI_PORT=9000 \
+WIKINOC_AI_HOST=0.0.0.0 \
+npm start
 ```
+
+Modelos disponibles en Groq (a jul/2026):
+- `llama-3.3-70b-versatile` (default, mejor calidad)
+- `llama-3.1-8b-instant` (más rápido, peor razonamiento)
+- `mixtral-8x7b-32768` (contexto largo de 32k)
+- `gemma2-9b-it`
 
 Mientras el servidor esté corriendo, el botón flotante de IA en la wiki va a mostrar un punto verde y las consultas van a funcionar. Si el servidor no está levantado, la wiki sigue funcionando normalmente (sólo se ve un punto rojo en el botón y aparece un mensaje de error al intentar consultar).
 
@@ -33,7 +52,7 @@ Mientras el servidor esté corriendo, el botón flotante de IA en la wiki va a m
 
 ### `GET /api/health`
 
-Health check. Devuelve `{ok: true, sdk: 'loaded', port: 8787}` si el SDK está inicializado.
+Health check. Devuelve `{ok: true, sdk: 'groq', model: 'llama-3.3-70b-versatile', port: 8787}` si el SDK está inicializado.
 
 ### `POST /api/chat`
 
@@ -51,7 +70,7 @@ Respuesta:
 {
   "response": "Según la entrada BCHAGENTES-MSGW…",
   "usage": {"prompt_tokens": 837, "completion_tokens": 171, "total_tokens": 1008},
-  "model": "glm-4-plus",
+  "model": "llama-3.3-70b-versatile",
   "conversationId": "20260716…",
   "timestamp": "2026-07-15T16:07:40.415Z"
 }
@@ -167,8 +186,8 @@ curl -X POST http://127.0.0.1:8787/api/chat \
 │  http://127.0.0.1:8787      │
 │                             │
 │  System prompt + contexto   │
-│  → z-ai-web-dev-sdk         │
-│  → GLM-4                    │
+│  → groq-sdk                 │
+│  → llama-3.3-70b-versatile  │
 │                             │
 └─────────────────────────────┘
 ```
@@ -176,5 +195,6 @@ curl -X POST http://127.0.0.1:8787/api/chat \
 ## Seguridad
 
 - El backend escucha en `127.0.0.1` por defecto (sólo accesible desde la misma máquina). Si lo exponés con `WIKINOC_AI_HOST=0.0.0.0`, aseguralo con un proxy reverso con auth.
-- El system prompt no expone credenciales del SDK.
+- El system prompt no expone la API key de Groq.
+- La API key se lee de la variable de entorno `GROQ_API_KEY` (nunca se hardcodea ni se loguea).
 - No hay persistencia de conversaciones del lado del backend — el historial vive en el `localStorage` del navegador (a través del frontend) y sólo se manda al backend cuando se hace una nueva consulta.

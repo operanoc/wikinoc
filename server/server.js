@@ -1,14 +1,18 @@
 // =====================================================================
-// Wiki NOC — Servidor IA
+// Wiki NOC — Servidor IA (Groq)
 // ---------------------------------------------------------------------
 // Backend pequeño que expone un endpoint /api/chat que el frontend
-// de la wiki (index.html) consume. Usa z-ai-web-dev-sdk para generar
+// de la wiki (index.html) consume. Usa Groq SDK para generar
 // respuestas con TODO el contenido de la wiki como contexto.
 //
+// Modelo por defecto: llama-3.3-70b-versatile
+//   (se puede overridear con la variable de entorno GROQ_MODEL)
+//
 // Cómo correrlo:
-//   cd server
-//   npm install
-//   npm start
+//   1) cd server
+//   2) npm install
+//   3) export GROQ_API_KEY="gsk_tu_api_key_aqui"   # obligatorio
+//   4) npm start
 //
 // El servidor escucha en http://localhost:8787 por defecto.
 // =====================================================================
@@ -35,38 +39,60 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const PORT = process.env.WIKINOC_AI_PORT || 8787;
 const HOST = process.env.WIKINOC_AI_HOST || '127.0.0.1';
 
-const app = express();
-app.use(express.json({ limit: '2mb' })); // la wiki puede ser grande
-app.use(cors()); // permite que el HTML abierto desde file:// o github.io consuma la API
+// ---------------------------------------------------------------------
+// Configuración Groq
+// ---------------------------------------------------------------------
+const GROQ_API_KEY = process.env.GROQ_API_KEY;
+const GROQ_MODEL = process.env.GROQ_MODEL || 'llama-3.3-70b-versatile';
+
+if (!GROQ_API_KEY) {
+  console.error('======================================================================');
+  console.error('  ERROR FATAL: falta la variable de entorno GROQ_API_KEY');
+  console.error('  Obtené tu API key en: https://console.groq.com/keys');
+  console.error('  Luego exportala antes de correr npm start:');
+  console.error('    export GROQ_API_KEY="gsk_..."');
+  console.error('======================================================================');
+  process.exit(1);
+}
 
 // ---------------------------------------------------------------------
-// Carga perezosa del SDK (z-ai-web-dev-sdk sólo funciona en backend)
+// Carga perezosa del SDK de Groq (sólo funciona en backend)
 // ---------------------------------------------------------------------
-let zaiInstance = null;
-let zaiInitError = null;
+let groqInstance = null;
+let groqInitError = null;
 
-async function getZAI() {
-  if (zaiInstance) return zaiInstance;
-  if (zaiInitError) throw zaiInitError;
+async function getGroq() {
+  if (groqInstance) return groqInstance;
+  if (groqInitError) throw groqInitError;
   try {
-    const ZAI = (await import('z-ai-web-dev-sdk')).default;
-    zaiInstance = await ZAI.create();
-    console.log('[wikinoc-ai] SDK z-ai-web-dev-sdk inicializado OK');
-    return zaiInstance;
+    const Groq = (await import('groq-sdk')).default;
+    groqInstance = new Groq({ apiKey: GROQ_API_KEY });
+    // Probe rápido: validar la key con un ping barato
+    console.log(`[wikinoc-ai] SDK groq-sdk inicializado OK — modelo: ${GROQ_MODEL}`);
+    return groqInstance;
   } catch (err) {
-    zaiInitError = err;
-    console.error('[wikinoc-ai] ERROR inicializando SDK:', err.message);
+    groqInitError = err;
+    console.error('[wikinoc-ai] ERROR inicializando groq-sdk:', err.message);
     throw err;
   }
 }
+
+const app = express();
+app.use(express.json({ limit: '2mb' })); // la wiki puede ser grande
+app.use(cors()); // permite que el HTML abierto desde file:// o github.io consuma la API
 
 // ---------------------------------------------------------------------
 // Health check
 // ---------------------------------------------------------------------
 app.get('/api/health', async (req, res) => {
   try {
-    await getZAI();
-    res.json({ ok: true, sdk: 'loaded', port: PORT });
+    await getGroq();
+    res.json({
+      ok: true,
+      sdk: 'groq',
+      model: GROQ_MODEL,
+      port: PORT,
+    });
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message });
   }
@@ -89,7 +115,7 @@ app.post('/api/chat', async (req, res) => {
       return res.status(400).json({ error: 'Falta el campo "question".' });
     }
 
-    const zai = await getZAI();
+    const groq = await getGroq();
 
     // Construir system prompt con TODO el contenido de la wiki
     const systemPrompt = buildSystemPrompt(wikiContext);
@@ -102,20 +128,22 @@ app.post('/api/chat', async (req, res) => {
       ...messages.filter(m => m.role === 'user' || m.role === 'assistant'),
     ];
 
-    // Asegurar que la última mensaje sea la pregunta actual
+    // Asegurar que el último mensaje sea la pregunta actual
     const lastMsg = fullMessages[fullMessages.length - 1];
     if (!lastMsg || lastMsg.role !== 'user' || lastMsg.content !== question) {
       fullMessages.push({ role: 'user', content: question });
     }
 
-    const completion = await zai.chat.completions.create({
+    const completion = await groq.chat.completions.create({
       messages: fullMessages,
-      thinking: { type: 'disabled' },
+      model: GROQ_MODEL,
+      temperature: 0.3, // respuestas más deterministas para operadores
+      max_tokens: 1024,
     });
 
     const response = completion.choices?.[0]?.message?.content || '';
     const usage = completion.usage || {};
-    const model = completion.model || 'unknown';
+    const model = completion.model || GROQ_MODEL;
 
     res.json({
       response,
@@ -226,8 +254,11 @@ ${wikiContext || '(wiki vacía — no hay contexto disponible)'}
 // ---------------------------------------------------------------------
 app.listen(PORT, HOST, () => {
   console.log('======================================================================');
-  console.log(`  Wiki NOC — Servidor IA escuchando en http://${HOST}:${PORT}`);
+  console.log(`  Wiki NOC — Servidor IA (Groq) escuchando en http://${HOST}:${PORT}`);
   console.log('======================================================================');
+  console.log(`  Modelo:  ${GROQ_MODEL}`);
+  console.log(`  API key: ${GROQ_API_KEY ? 'configurada (' + GROQ_API_KEY.slice(0, 8) + '...)' : 'FALTA — setear GROQ_API_KEY'}`);
+  console.log('----------------------------------------------------------------------');
   console.log('  Endpoints:');
   console.log(`    GET  /api/health   — health check`);
   console.log(`    POST /api/chat      — consultar al asistente`);
