@@ -1660,7 +1660,7 @@ body.auth-locked {
   <div class="modal" style="max-width:480px">
     <div class="modal-header"><h3>Configurar NOciTO (Groq)</h3><button class="btn-icon" onclick="closeAIConfigModal()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
     <div class="modal-body">
-      <p style="color:var(--text-muted);font-size:12px;margin-bottom:6px;line-height:1.5">Usamos <b>Groq</b> con modelo <code>llama-3.1-8b-instant</code> (gratis, rápido y con rate limit alto). Ya viene con una API Key por defecto, pero podés poner la tuya propia.</p>
+      <p style="color:var(--text-muted);font-size:12px;margin-bottom:6px;line-height:1.5">Usamos <b>Groq</b> con modelo <code>llama-3.3-70b-versatile</code> (gratis, 12k TPM). Ya viene con una API Key por defecto, pero podés poner la tuya propia para tener tu propio rate limit.</p>
       <p style="color:var(--accent);font-size:11px;margin-bottom:14px;line-height:1.4">
         Para conseguir tu propia key:<br>
         1. Creá cuenta gratis en <a href="https://console.groq.com" target="_blank" style="color:var(--accent);text-decoration:underline;font-weight:600">console.groq.com</a><br>
@@ -3384,11 +3384,11 @@ function _aiGetConfig() {
     return {
       url: c.url || 'https://api.groq.com/openai/v1/chat/completions',
       key: c.key || _decodeGK(),
-      model: c.model || 'llama-3.1-8b-instant',
+      model: c.model || 'llama-3.3-70b-versatile',
       system: c.system || _aiDefaultSystem
     };
   } catch (e) {
-    return { url:'https://api.groq.com/openai/v1/chat/completions', key:_decodeGK(), model:'llama-3.1-8b-instant', system:_aiDefaultSystem };
+    return { url:'https://api.groq.com/openai/v1/chat/completions', key:_decodeGK(), model:'llama-3.3-70b-versatile', system:_aiDefaultSystem };
   }
 }
 
@@ -3425,7 +3425,7 @@ function saveAIConfig() {
   var cfg = {
     url: 'https://api.groq.com/openai/v1/chat/completions',
     key: key || _decodeGK(),
-    model: 'llama-3.1-8b-instant',
+    model: 'llama-3.3-70b-versatile',
     system: sys || _aiDefaultSystem
   };
   try { localStorage.setItem(_aiConfigKey, JSON.stringify(cfg)); } catch (e) {}
@@ -3550,11 +3550,9 @@ function _aiShowTyping(show) {
 function _aiFilterEntries(query, allEntries) {
   if (!allEntries || !allEntries.length) return [];
   var q = (query || '').toLowerCase();
-  // Tokens de la query de >=3 chars (ignora stopwords cortas)
   var tokens = q.split(/[^a-z0-9_]+/i).filter(function(t){ return t && t.length >= 3; });
   if (!tokens.length) {
-    // Sin tokens útiles: devolver las primeras 8
-    return allEntries.slice(0, 8);
+    return allEntries.slice(0, 5);
   }
   var scored = allEntries.map(function(e){
     var hay = [
@@ -3569,38 +3567,33 @@ function _aiFilterEntries(query, allEntries) {
   var matches = scored.filter(function(x){ return x.score > 0; })
     .sort(function(a,b){ return b.score - a.score; })
     .map(function(x){ return x.e; });
-  if (!matches.length) return allEntries.slice(0, 6);
-  return matches.slice(0, 10);
+  if (!matches.length) return allEntries.slice(0, 4);
+  return matches.slice(0, 5);
 }
 
 // Construye contexto de la wiki: solo entradas relevantes a la query (para no volar el rate limit)
 function _aiGetWikiContext(query) {
   var ctx = '--- CONTEXTO DE LA WIKI MSGW (AS400 / JDE Edwards) ---\n';
-  ctx += 'Usuario actual: ' + ((typeof AUTH_USER !== 'undefined') ? AUTH_USER : 'nocopera') + '\n';
-  ctx += 'Fecha actual: ' + new Date().toISOString().slice(0,10) + '\n\n';
+  ctx += 'Usuario: ' + ((typeof AUTH_USER !== 'undefined') ? AUTH_USER : 'nocopera') + ' | Fecha: ' + new Date().toISOString().slice(0,10) + '\n\n';
   var allEntries = (typeof getAllEntries === 'function') ? getAllEntries() : [];
   if (!allEntries.length) return ctx + 'Sin entradas cargadas.';
-  ctx += 'Total de entradas en la wiki: ' + allEntries.length + '\n';
   var entries = _aiFilterEntries(query, allEntries);
-  ctx += 'Enviando ' + entries.length + ' entrada(s) relevante(s) para tu consulta. Si necesitás info sobre otra entrada específica, mencioná su ID o código.\n\n';
+  ctx += 'Enviando ' + entries.length + ' de ' + allEntries.length + ' entradas. Pedí por ID si necesitás otra.\n\n';
   entries.forEach(function(e, i){
-    ctx += '[' + (i+1) + '] ID: ' + (e.id || '-') + ' | ' + (e.title || '-') + '\n';
-    if (e.category) ctx += '  Categoría: ' + e.category + '\n';
-    if (e.severity) ctx += '  Severidad: ' + e.severity + '\n';
-    if (e.system && e.system.length) ctx += '  Sistemas: ' + e.system.join(', ') + '\n';
-    if (e.programs && e.programs.length) ctx += '  Programas: ' + e.programs.join(', ') + '\n';
-    if (e.files && e.files.length) ctx += '  Archivos: ' + e.files.join(', ') + '\n';
-    if (e.message) ctx += '  Mensaje: ' + String(e.message).substring(0, 400) + (e.message.length > 400 ? '…[truncado]' : '') + '\n';
-    if (e.cause) ctx += '  Causa: ' + String(e.cause).substring(0, 400) + (e.cause.length > 400 ? '…[truncado]' : '') + '\n';
+    ctx += '[' + (i+1) + '] ' + (e.id || '-') + ' — ' + (e.title || '-') + '\n';
+    if (e.category) ctx += '  Cat: ' + e.category + ' | Sev: ' + (e.severity||'-') + '\n';
+    if (e.system && e.system.length) ctx += '  Sys: ' + e.system.join(', ') + '\n';
+    if (e.programs && e.programs.length) ctx += '  Pgm: ' + e.programs.join(', ') + '\n';
+    if (e.files && e.files.length) ctx += '  Arch: ' + e.files.join(', ') + '\n';
+    if (e.message) ctx += '  Msg: ' + String(e.message).substring(0, 250) + (e.message.length > 250 ? '…' : '') + '\n';
+    if (e.cause) ctx += '  Causa: ' + String(e.cause).substring(0, 250) + (e.cause.length > 250 ? '…' : '') + '\n';
     if (e.resolution && e.resolution.length) {
-      ctx += '  Resolución:\n';
-      e.resolution.slice(0, 5).forEach(function(r, idx){ ctx += '    ' + (idx+1) + '. ' + r + '\n'; });
+      ctx += '  Res:\n';
+      e.resolution.slice(0, 3).forEach(function(r, idx){ ctx += '    ' + (idx+1) + '. ' + String(r).substring(0, 150) + '\n'; });
     }
     if (e.cases && e.cases.length) {
-      ctx += '  Casos (últimos 2):\n';
-      e.cases.slice(-2).forEach(function(c){
-        ctx += '    - ' + (c.date||'-') + ' | ' + (c.ticket||'-') + ' | ' + (c.job||'-') + ' | ' + (c.action||'-') + '\n';
-      });
+      var last = e.cases[e.cases.length - 1];
+      ctx += '  Últ caso: ' + (last.date||'-') + ' | ' + (last.ticket||'-') + ' | ' + (last.job||'-') + '\n';
     }
     ctx += '\n';
   });
@@ -3643,7 +3636,7 @@ async function aiSend() {
       body: JSON.stringify({
         model: cfg.model,
         messages: apiMsgs,
-        max_tokens: 1024,
+        max_tokens: 768,
         temperature: 0.7
       })
     });
@@ -3658,7 +3651,12 @@ async function aiSend() {
     _aiAddMsg('assistant', reply);
   } catch (err) {
     console.error('[NOciTO]', err);
-    _aiAddMsg('assistant', 'Error: ' + err.message + '\n\nVerificá la configuración de la API en ⚙ Configurar API de IA (Groq).');
+    var msg = err.message || 'Error desconocido';
+    var hint = 'Verificá la configuración en ⚙ Configurar API de IA (Groq).';
+    if (msg.indexOf('429') >= 0) hint = 'Groq está con rate limit. Esperá 30s y probá de nuevo, o poné tu propia API Key (tier gratis en console.groq.com).';
+    else if (msg.indexOf('413') >= 0) hint = 'La consulta es demasiado grande. Probá con una pregunta más corta o más específica (mencioná un ID como RNX1221).';
+    else if (msg.indexOf('401') >= 0 || msg.indexOf('403') >= 0) hint = 'API Key inválida. Configurala en ⚙ Configurar API de IA (Groq).';
+    _aiAddMsg('assistant', 'Error: ' + msg + '\n\n' + hint);
   } finally {
     _aiSending = false;
     document.getElementById('aiSendBtn').disabled = false;
