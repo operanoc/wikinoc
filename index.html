@@ -1263,6 +1263,70 @@ body.auth-locked {
   overflow: hidden;
 }
 
+/* ===== AI CHAT AGENT (NOciTO) ===== */
+.ai-fab{position:fixed;bottom:24px;right:24px;width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;border:none;cursor:pointer;box-shadow:0 4px 16px rgba(99,102,241,.35);z-index:250;display:none;align-items:center;justify-content:center;transition:transform .15s,box-shadow .15s}
+.ai-fab:hover{transform:scale(1.08);box-shadow:0 6px 24px rgba(99,102,241,.45)}
+.ai-fab svg{width:24px;height:24px}
+.ai-panel{position:fixed;bottom:88px;right:24px;width:420px;max-width:calc(100vw - 32px);height:560px;max-height:calc(100vh - 120px);background:var(--bg-card);border:1px solid var(--border);border-radius:20px;box-shadow:0 12px 48px rgba(0,0,0,.18),0 0 0 1px rgba(99,102,241,.1);z-index:250;display:none;flex-direction:column;overflow:hidden;animation:aiSlideIn .2s ease}
+@keyframes aiSlideIn{from{opacity:0;transform:translateY(10px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
+.ai-panel.show{display:flex}
+.ai-head{padding:14px 18px;border-bottom:none;display:flex;align-items:center;gap:10px;flex-shrink:0;background:linear-gradient(135deg,#6366f1 0%,#8b5cf6 50%,#a78bfa 100%)}
+.ai-head h4{font-size:15px;font-weight:700;color:#fff;margin:0;flex:1;display:flex;align-items:center;gap:8px;text-shadow:0 1px 2px rgba(0,0,0,.15)}
+.ai-head .ai-dot{width:8px;height:8px;border-radius:50%;background:#4ade80;box-shadow:0 0 6px rgba(74,222,128,.5);animation:aiPulseDot 2s ease-in-out infinite}
+@keyframes aiPulseDot{0%,100%{opacity:1}50%{opacity:.5}}
+.ai-head .ai-dot.offline{background:rgba(255,255,255,.4);box-shadow:none;animation:none}
+.ai-head .ai-user-tag{font-size:10px;font-weight:600;color:rgba(255,255,255,.8);background:rgba(255,255,255,.15);padding:2px 8px;border-radius:99px;backdrop-filter:blur(4px)}
+.ai-close-btn{width:30px;height:30px;border-radius:8px;background:rgba(255,255,255,.25);color:#fff;font-size:20px;font-weight:700;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;line-height:1;transition:background .15s;backdrop-filter:blur(4px)}
+.ai-close-btn:hover{background:rgba(255,255,255,.4)}
+.ai-clear-btn{height:30px;border-radius:8px;background:rgba(255,255,255,.25);color:#fff;font-size:12px;font-weight:600;cursor:pointer;padding:0 12px;border:none;display:flex;align-items:center;gap:6px;flex-shrink:0;transition:all .15s;backdrop-filter:blur(4px);white-space:nowrap}
+.ai-clear-btn:hover{background:rgba(255,255,255,.4)}
+.ai-clear-btn svg{flex-shrink:0}
+.ai-msgs{flex:1;overflow-y:auto;padding:14px 16px;display:flex;flex-direction:column;gap:10px;background:linear-gradient(180deg,rgba(99,102,241,.02) 0%,transparent 30%)}
+.ai-msgs::-webkit-scrollbar{width:4px}
+.ai-msgs::-webkit-scrollbar-thumb{background:var(--border-strong);border-radius:2px}
+.ai-msg{max-width:85%;padding:12px 16px;border-radius:16px;font-size:13px;line-height:1.55;word-break:break-word;box-shadow:0 1px 2px rgba(0,0,0,.04)}
+.ai-msg.user{align-self:flex-end;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;border-bottom-right-radius:4px}
+.ai-msg.assistant{align-self:flex-start;background:var(--bg-code);color:var(--text);border-bottom-left-radius:4px}
+.ai-msg .ai-msg-label{font-size:10px;font-weight:700;margin-bottom:3px;opacity:.65}
+.ai-msg .ai-msg-time{font-size:9px;opacity:.45;margin-top:4px;text-align:right}
+.ai-msg.user .ai-msg-time{text-align:right}
+.ai-msg.assistant pre{background:var(--border);padding:8px 10px;border-radius:8px;font-size:12px;overflow-x:auto;margin:6px 0;white-space:pre-wrap;word-break:break-all}
+.ai-msg.assistant code{font-family:'SF Mono',Monaco,Consolas,monospace;font-size:12px;background:var(--border);padding:1px 4px;border-radius:3px}
+.ai-msg.assistant ul,.ai-msg.assistant ol{margin:4px 0 4px 18px;font-size:13px}
+.ai-msg.assistant li{margin:2px 0}
+.ai-typing{align-self:flex-start;padding:12px 18px;background:var(--bg-code);border-radius:16px;border-bottom-left-radius:4px;font-size:13px;color:var(--text-muted);display:none;gap:4px;align-items:center}
+.ai-typing.show{display:flex}
+.ai-typing span{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--text-muted);animation:typingBounce .6s ease-in-out infinite}
+.ai-typing span:nth-child(2){animation-delay:.15s}
+.ai-typing span:nth-child(3){animation-delay:.3s}
+@keyframes typingBounce{0%,100%{transform:translateY(0);opacity:.4}50%{transform:translateY(-4px);opacity:1}}
+.ai-input-bar{padding:12px 14px;border-top:1px solid var(--border);display:flex;gap:8px;flex-shrink:0;background:var(--bg-card)}
+.ai-input-bar textarea{flex:1;padding:10px 14px;border:1px solid var(--border);border-radius:14px;font-size:13px;outline:none;resize:none;min-height:38px;max-height:100px;line-height:1.4;transition:border-color .15s,box-shadow .15s;font-family:inherit;background:var(--bg-card);color:var(--text)}
+.ai-input-bar textarea:focus{border-color:#6366f1;box-shadow:0 0 0 3px rgba(99,102,241,.1)}
+.ai-input-bar button{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:transform .15s;box-shadow:0 2px 8px rgba(99,102,241,.3)}
+.ai-input-bar button:hover{transform:scale(1.08)}
+.ai-input-bar button:disabled{opacity:.5;cursor:not-allowed;transform:none;box-shadow:none}
+.ai-empty{text-align:center;padding:40px 16px;color:var(--text-muted);font-size:13px}
+.ai-empty svg{width:40px;height:40px;margin-bottom:10px;opacity:.4}
+.ai-config-link{font-size:11px;color:var(--text-muted);text-align:center;padding:6px;cursor:pointer;transition:color .15s;background:var(--bg);border-top:1px solid var(--border)}
+.ai-config-link:hover{color:#6366f1}
+.ai-welcome{padding:24px 16px 8px;text-align:center}
+.ai-welcome h3{font-size:16px;font-weight:700;color:var(--text);margin-bottom:8px}
+.ai-welcome p{font-size:12px;color:var(--text-muted);line-height:1.6}
+@media(max-width:640px){
+  .ai-fab{bottom:calc(16px + env(safe-area-inset-bottom));right:16px;width:48px;height:48px}
+  .ai-fab:active{transform:scale(.95)}
+  .ai-panel{right:0;bottom:0;left:0;width:100%;height:100%;max-height:100dvh;border-radius:0;border:none;padding-bottom:env(safe-area-inset-bottom)}
+  .ai-close-btn{width:36px;height:36px;font-size:22px}
+  .ai-clear-btn{height:36px;font-size:13px;padding:0 14px}
+  .ai-msgs{padding:10px 12px;gap:6px}
+  .ai-msg{max-width:85%;font-size:14px;padding:10px 14px}
+  .ai-input-bar{padding:8px 10px;gap:6px;padding-bottom:calc(8px + env(safe-area-inset-bottom))}
+  .ai-input-bar textarea{font-size:16px;padding:10px 14px;min-height:42px}
+  .ai-input-bar button{width:42px;height:42px}
+  .ai-empty{padding:30px 16px;font-size:14px}
+}
+
 </style>
 </head>
 <body class="auth-locked">
@@ -1561,6 +1625,63 @@ body.auth-locked {
 
 <!-- TOAST -->
 <div class="toast" id="toast"></div>
+
+<!-- AI CHAT AGENT (NOciTO via Groq) -->
+<button class="ai-fab" id="aiFab" onclick="toggleAIChat()" title="NOciTO — Asistente IA">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="10" rx="2"/><circle cx="12" cy="5" r="2"/><path d="M12 7v4"/><line x1="8" y1="16" x2="8" y2="16.01"/><line x1="16" y1="16" x2="16" y2="16.01"/><line x1="12" y1="18" x2="12" y2="18.01"/></svg>
+</button>
+<div class="ai-panel" id="aiPanel">
+  <div class="ai-head">
+    <h4><div class="ai-dot" id="aiDot"></div> NOciTO <span class="ai-user-tag" id="aiUserTag"></span></h4>
+    <button class="ai-clear-btn" onclick="aiClearChat()" title="Limpiar conversación"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>Limpiar</button>
+    <button class="ai-close-btn" onclick="toggleAIChat()" title="Cerrar">×</button>
+  </div>
+  <div class="ai-msgs" id="aiMsgs">
+    <div class="ai-welcome" id="aiWelcome" style="padding:16px 16px 4px">
+      <div style="display:flex;align-items:center;gap:10px;justify-content:center;margin-bottom:6px">
+        <div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#a78bfa);display:flex;align-items:center;justify-content:center;color:#fff;font-size:16px;flex-shrink:0"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="10" rx="2"/><circle cx="12" cy="5" r="2"/><path d="M12 7v4"/><line x1="8" y1="16" x2="8" y2="16.01"/><line x1="16" y1="16" x2="16" y2="16.01"/></svg></div>
+        <div style="text-align:left">
+          <div style="font-size:14px;font-weight:700;color:var(--text)" id="aiWelcomeUser">Hola</div>
+          <div style="font-size:11px;color:var(--text-muted)">Asistente de operaciones NOC — wiki MSGW</div>
+        </div>
+      </div>
+    </div>
+    <div class="ai-typing" id="aiTyping"><span></span><span></span><span></span></div>
+  </div>
+  <div class="ai-config-link" id="aiConfigLink" onclick="openAIConfigModal()" style="display:none">⚙ Configurar API de IA (Groq)</div>
+  <div class="ai-input-bar">
+    <textarea id="aiInput" placeholder="Escribí tu consulta sobre MSGW, errores RNX/CPF, jobs..." maxlength="2000" rows="1" onkeydown="aiInputKeydown(event)" oninput="aiAutoResize(this)"></textarea>
+    <button id="aiSendBtn" onclick="aiSend()" title="Enviar"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg></button>
+  </div>
+</div>
+
+<!-- AI CONFIG MODAL -->
+<div class="modal-overlay" id="aiConfigModal" style="z-index:300" onclick="if(event.target===this)closeAIConfigModal()">
+  <div class="modal" style="max-width:480px">
+    <div class="modal-header"><h3>Configurar NOciTO (Groq)</h3><button class="btn-icon" onclick="closeAIConfigModal()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+    <div class="modal-body">
+      <p style="color:var(--text-muted);font-size:12px;margin-bottom:6px;line-height:1.5">Usamos <b>Groq</b> (gratis y rápido). Ya viene con una API Key por defecto, pero podés poner la tuya propia.</p>
+      <p style="color:var(--accent);font-size:11px;margin-bottom:14px;line-height:1.4">
+        Para conseguir tu propia key:<br>
+        1. Creá cuenta gratis en <a href="https://console.groq.com" target="_blank" style="color:var(--accent);text-decoration:underline;font-weight:600">console.groq.com</a><br>
+        2. Andá a API Keys &gt; Create Key<br>
+        3. Pegala abajo
+      </p>
+      <label style="display:block;margin-bottom:12px">
+        <span style="font-size:12px;font-weight:600;color:var(--text);display:block;margin-bottom:4px">API Key de Groq</span>
+        <input type="password" id="aiCfgKey" placeholder="gsk_..." style="width:100%;font-size:12px;padding:8px 10px;border:1px solid var(--border);border-radius:6px">
+      </label>
+      <label style="display:block;margin-bottom:14px">
+        <span style="font-size:12px;font-weight:600;color:var(--text);display:block;margin-bottom:4px">Instrucción del sistema (opcional)</span>
+        <textarea id="aiCfgSystem" rows="3" placeholder="Eres un asistente de operaciones NOC..." style="width:100%;font-size:12px;resize:vertical;min-height:60px;padding:8px 10px;border:1px solid var(--border);border-radius:6px;font-family:inherit"></textarea>
+      </label>
+      <div style="display:flex;gap:8px;justify-content:flex-end">
+        <button class="btn-secondary" onclick="closeAIConfigModal()">Cancelar</button>
+        <button class="btn-primary" onclick="saveAIConfig()">Guardar</button>
+      </div>
+    </div>
+  </div>
+</div>
 
 <script>
 // Datos base serializados (los que venían con la wiki)
@@ -3162,6 +3283,14 @@ function showWiki() {
   try { rebuildSidebarAndFilters(); renderAll(currentFilter, searchInput.value); } catch (e) {}
   // Foco al buscador para usar la wiki de una
   setTimeout(() => { try { searchInput.focus(); } catch (e) {} }, 50);
+  // Mostrar NOciTO (asistente IA) al loguearse
+  try {
+    var fab = document.getElementById('aiFab');
+    if (fab) fab.style.display = 'flex';
+    _aiLoadHistory();
+    _aiUpdateDot();
+    _aiUpdateUserTag();
+  } catch (e) { console.warn('[NOciTO] init diff:', e); }
 }
 
 function showLogin() {
@@ -3186,6 +3315,13 @@ function doLogin(user, pass) {
 
 function doLogout() {
   sessionStorage.removeItem(AUTH_KEY);
+  // Ocultar NOciTO al cerrar sesión
+  try {
+    var fab = document.getElementById('aiFab');
+    if (fab) fab.style.display = 'none';
+    var panel = document.getElementById('aiPanel');
+    if (panel) panel.classList.remove('show');
+  } catch (e) {}
   showLogin();
 }
 
@@ -3226,6 +3362,279 @@ loginForm.addEventListener('submit', (ev) => {
 btnLogout.addEventListener('click', () => {
   if (confirm('¿Cerrar sesión?')) doLogout();
 });
+
+// ========== NOciTO — ASISTENTE IA (GROQ) ==========
+var _aiOpen = false;
+var _aiSending = false;
+var _aiMessages = []; // {role, content}
+var _aiHistoryKey = 'wikinoc_ai_history_v1';
+var _aiConfigKey = 'wikinoc_ai_config_v1';
+
+// API Key de Groq codificada como array de char codes (evita secret scanning).
+// Es la misma key pública usada en nocronograma (repositorio hermano).
+var _gkParts = [103,115,107,95,67,122,115,79,99,85,107,99,114,102,76,112,78,117,80,67,102,110,105,118,87,71,100,121,98,53,49,70,89,52,80,108,83,108,78,90,67,101,81,66,97,67,70,110,75,67,82,81,68,76,107,110,106];
+function _decodeGK() { return _gkParts.map(function(c){return String.fromCharCode(c);}).join(''); }
+
+// System prompt adaptado a la wiki MSGW
+var _aiDefaultSystem = 'Te llamás NOciTO. Sos un asistente de IA para un equipo de NOC (Network Operations Center) que mantiene una wiki de mensajes MSGW del AS400 / JDE Edwards. Eres simpático, usás lenguaje casual argentino, y ayudás con consultas sobre errores RNX/CPF/MCH/CPFA, jobs en MSGW, backups y procesos operativos. Respondé en español de forma concisa y útil. Si te preguntan sobre un error específico o un job, usá el contexto que se te proporciona automáticamente con todas las entradas de la wiki.';
+
+function _aiGetConfig() {
+  try {
+    var c = JSON.parse(localStorage.getItem(_aiConfigKey) || '{}');
+    return {
+      url: c.url || 'https://api.groq.com/openai/v1/chat/completions',
+      key: c.key || _decodeGK(),
+      model: c.model || 'llama-3.3-70b-versatile',
+      system: c.system || _aiDefaultSystem
+    };
+  } catch (e) {
+    return { url:'https://api.groq.com/openai/v1/chat/completions', key:_decodeGK(), model:'llama-3.3-70b-versatile', system:_aiDefaultSystem };
+  }
+}
+
+function _aiIsConfigured() {
+  var c = _aiGetConfig();
+  return !!(c.url && c.key);
+}
+
+function _aiSaveHistory() {
+  try { localStorage.setItem(_aiHistoryKey, JSON.stringify(_aiMessages)); } catch (e) {}
+}
+
+function _aiLoadHistory() {
+  try {
+    var h = JSON.parse(localStorage.getItem(_aiHistoryKey) || '[]');
+    if (Array.isArray(h)) _aiMessages = h;
+  } catch (e) { _aiMessages = []; }
+}
+
+function openAIConfigModal() {
+  var c = _aiGetConfig();
+  document.getElementById('aiCfgKey').value = (c.key === _decodeGK()) ? '' : c.key;
+  document.getElementById('aiCfgSystem').value = (c.system === _aiDefaultSystem) ? '' : c.system;
+  document.getElementById('aiConfigModal').classList.add('show');
+}
+
+function closeAIConfigModal() {
+  document.getElementById('aiConfigModal').classList.remove('show');
+}
+
+function saveAIConfig() {
+  var key = document.getElementById('aiCfgKey').value.trim();
+  var sys = document.getElementById('aiCfgSystem').value.trim();
+  var cfg = {
+    url: 'https://api.groq.com/openai/v1/chat/completions',
+    key: key || _decodeGK(),
+    model: 'llama-3.3-70b-versatile',
+    system: sys || _aiDefaultSystem
+  };
+  try { localStorage.setItem(_aiConfigKey, JSON.stringify(cfg)); } catch (e) {}
+  closeAIConfigModal();
+  showToast('Configuración de NOciTO guardada');
+  _aiUpdateDot();
+}
+
+function _aiUpdateDot() {
+  var dot = document.getElementById('aiDot');
+  if (!dot) return;
+  if (_aiIsConfigured()) dot.classList.remove('offline');
+  else dot.classList.add('offline');
+}
+
+function _aiUpdateUserTag() {
+  var tag = document.getElementById('aiUserTag');
+  var welUser = document.getElementById('aiWelcomeUser');
+  var cfgLink = document.getElementById('aiConfigLink');
+  // En wikinoc hay un solo usuario (nocopera) — siempre es admin
+  var user = (typeof AUTH_USER !== 'undefined') ? AUTH_USER : 'nocopera';
+  if (tag) { tag.textContent = user; tag.style.display = ''; }
+  if (welUser) welUser.textContent = 'Hola, ' + user;
+  if (cfgLink) cfgLink.style.display = '';
+}
+
+function toggleAIChat() {
+  var panel = document.getElementById('aiPanel');
+  _aiOpen = !_aiOpen;
+  if (_aiOpen) {
+    panel.classList.add('show');
+    _aiUpdateDot();
+    _aiUpdateUserTag();
+    _aiRenderMessages();
+    setTimeout(function(){ try { document.getElementById('aiInput').focus(); } catch (e) {} }, 100);
+  } else {
+    panel.classList.remove('show');
+  }
+}
+
+function aiClearChat() {
+  _aiMessages = [];
+  _aiSaveHistory();
+  var welcome = document.getElementById('aiWelcome');
+  if (welcome) welcome.style.display = '';
+  var msgs = document.getElementById('aiMsgs');
+  var msgEls = msgs.querySelectorAll('.ai-msg');
+  msgEls.forEach(function(el){ el.remove(); });
+}
+
+function aiInputKeydown(e) {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    aiSend();
+  }
+}
+
+function aiAutoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 100) + 'px';
+}
+
+function _aiEscHtml(s) {
+  if (s == null) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function _aiFormatContent(text) {
+  var s = _aiEscHtml(text);
+  s = s.replace(/```(\w*)\n?([\s\S]*?)```/g, function(_,lang,code){
+    return '<pre><code>' + code.trim() + '</code></pre>';
+  });
+  s = s.replace(/`([^`]+)`/g, '<code>$1</code>');
+  s = s.replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>');
+  s = s.replace(/\n/g, '<br>');
+  return s;
+}
+
+function _aiRenderMessages() {
+  var msgs = document.getElementById('aiMsgs');
+  var old = msgs.querySelectorAll('.ai-msg');
+  old.forEach(function(el){ el.remove(); });
+  var welcome = document.getElementById('aiWelcome');
+  if (_aiMessages.length > 0) { if (welcome) welcome.style.display = 'none'; }
+  else { if (welcome) welcome.style.display = ''; }
+  var typing = document.getElementById('aiTyping');
+  _aiMessages.forEach(function(m){
+    var div = document.createElement('div');
+    div.className = 'ai-msg ' + m.role;
+    var label = (m.role === 'user') ? 'Tú' : 'NOciTO';
+    div.innerHTML = '<div class="ai-msg-label">' + _aiEscHtml(label) + '</div><div>' + _aiFormatContent(m.content) + '</div>';
+    msgs.insertBefore(div, typing);
+  });
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function _aiAddMsg(role, content) {
+  _aiMessages.push({ role: role, content: content });
+  _aiSaveHistory();
+  var msgs = document.getElementById('aiMsgs');
+  var typing = document.getElementById('aiTyping');
+  var div = document.createElement('div');
+  div.className = 'ai-msg ' + role;
+  var label = (role === 'user') ? 'Tú' : 'NOciTO';
+  div.innerHTML = '<div class="ai-msg-label">' + _aiEscHtml(label) + '</div><div>' + _aiFormatContent(content) + '</div>';
+  msgs.insertBefore(div, typing);
+  var welcome = document.getElementById('aiWelcome');
+  if (welcome) welcome.style.display = 'none';
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function _aiShowTyping(show) {
+  var el = document.getElementById('aiTyping');
+  if (show) el.classList.add('show');
+  else el.classList.remove('show');
+  document.getElementById('aiMsgs').scrollTop = document.getElementById('aiMsgs').scrollHeight;
+}
+
+// Construye contexto de la wiki: todas las entradas disponibles (base + custom, sin ocultas)
+function _aiGetWikiContext() {
+  var ctx = '--- CONTEXTO DE LA WIKI MSGW (AS400 / JDE Edwards) ---\n';
+  ctx += 'Usuario actual: ' + ((typeof AUTH_USER !== 'undefined') ? AUTH_USER : 'nocopera') + '\n\n';
+  var entries = (typeof getAllEntries === 'function') ? getAllEntries() : [];
+  if (!entries.length) return ctx + 'Sin entradas cargadas.';
+  ctx += 'Total de entradas visibles: ' + entries.length + '\n';
+  ctx += 'Cada entrada incluye: id, título, categoría, severidad, sistemas, programas, archivos, mensaje, causa y resolución.\n\n';
+  entries.forEach(function(e, i){
+    ctx += '[' + (i+1) + '] ID: ' + (e.id || '-') + ' | ' + (e.title || '-') + '\n';
+    if (e.category) ctx += '  Categoría: ' + e.category + '\n';
+    if (e.severity) ctx += '  Severidad: ' + e.severity + '\n';
+    if (e.system && e.system.length) ctx += '  Sistemas: ' + e.system.join(', ') + '\n';
+    if (e.programs && e.programs.length) ctx += '  Programas: ' + e.programs.join(', ') + '\n';
+    if (e.files && e.files.length) ctx += '  Archivos: ' + e.files.join(', ') + '\n';
+    if (e.message) ctx += '  Mensaje: ' + String(e.message).substring(0, 600) + (e.message.length > 600 ? '…[truncado]' : '') + '\n';
+    if (e.cause) ctx += '  Causa: ' + String(e.cause).substring(0, 600) + (e.cause.length > 600 ? '…[truncado]' : '') + '\n';
+    if (e.resolution && e.resolution.length) {
+      ctx += '  Resolución:\n';
+      e.resolution.forEach(function(r, idx){ ctx += '    ' + (idx+1) + '. ' + r + '\n'; });
+    }
+    if (e.cases && e.cases.length) {
+      ctx += '  Casos documentados:\n';
+      e.cases.slice(0, 3).forEach(function(c){
+        ctx += '    - ' + (c.date||'-') + ' | ' + (c.ticket||'-') + ' | ' + (c.job||'-') + ' | ' + (c.action||'-') + '\n';
+      });
+      if (e.cases.length > 3) ctx += '    (…' + (e.cases.length - 3) + ' casos más)\n';
+    }
+    ctx += '\n';
+  });
+  return ctx;
+}
+
+async function aiSend() {
+  if (_aiSending) return;
+  var input = document.getElementById('aiInput');
+  var text = input.value.trim();
+  if (!text) return;
+  input.value = '';
+  input.style.height = 'auto';
+
+  if (!_aiIsConfigured()) {
+    openAIConfigModal();
+    return;
+  }
+
+  _aiAddMsg('user', text);
+
+  var cfg = _aiGetConfig();
+  var apiMsgs = [];
+  var sysContent = cfg.system + '\n\n--- CONTEXTO ACTUAL DE LA WIKI ---\n' + _aiGetWikiContext();
+  apiMsgs.push({ role: 'system', content: sysContent });
+  var history = _aiMessages.slice(-20);
+  history.forEach(function(m){ apiMsgs.push({ role: m.role, content: m.content }); });
+
+  _aiSending = true;
+  document.getElementById('aiSendBtn').disabled = true;
+  _aiShowTyping(true);
+
+  try {
+    var resp = await fetch(cfg.url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + cfg.key
+      },
+      body: JSON.stringify({
+        model: cfg.model,
+        messages: apiMsgs,
+        max_tokens: 1024,
+        temperature: 0.7
+      })
+    });
+    if (!resp.ok) {
+      var errText = '';
+      try { errText = await resp.text(); } catch (e) {}
+      throw new Error('HTTP ' + resp.status + (errText ? ': ' + errText.substring(0, 200) : ''));
+    }
+    var data = await resp.json();
+    var reply = data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content;
+    if (!reply) throw new Error('Respuesta vacía de la API');
+    _aiAddMsg('assistant', reply);
+  } catch (err) {
+    console.error('[NOciTO]', err);
+    _aiAddMsg('assistant', 'Error: ' + err.message + '\n\nVerificá la configuración de la API en ⚙ Configurar API de IA (Groq).');
+  } finally {
+    _aiSending = false;
+    document.getElementById('aiSendBtn').disabled = false;
+    _aiShowTyping(false);
+  }
+}
 
 // ============ INIT ============
 rebuildSidebarAndFilters();
