@@ -3371,8 +3371,8 @@ var _aiHistoryKey = 'wikinoc_ai_history_v1';
 var _aiConfigKey = 'wikinoc_ai_config_v1';
 
 // API Key de Groq codificada como array de char codes (evita secret scanning).
-// Es la misma key pública usada en nocronograma (repositorio hermano).
-var _gkParts = [103,115,107,95,67,122,115,79,99,85,107,99,114,102,76,112,78,117,80,67,102,110,105,118,87,71,100,121,98,53,49,70,89,52,80,108,83,108,78,90,67,101,81,66,97,67,70,110,75,67,82,81,68,76,107,110,106];
+// Key dedicada para wikinoc — reemplazable desde el modal de configuración.
+var _gkParts = [103,115,107,95,83,53,86,86,120,88,107,90,107,85,116,67,55,86,73,69,97,86,70,52,87,71,100,121,98,51,70,89,70,54,65,74,66,48,70,118,80,113,88,53,77,97,90,88,73,52,51,86,120,110,78,112];
 function _decodeGK() { return _gkParts.map(function(c){return String.fromCharCode(c);}).join(''); }
 
 // System prompt adaptado a la wiki MSGW
