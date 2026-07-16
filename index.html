@@ -1294,11 +1294,12 @@ body.auth-locked {
 .ai-msg.assistant code{font-family:'SF Mono',Monaco,Consolas,monospace;font-size:12px;background:var(--border);padding:1px 4px;border-radius:3px}
 .ai-msg.assistant ul,.ai-msg.assistant ol{margin:4px 0 4px 18px;font-size:13px}
 .ai-msg.assistant li{margin:2px 0}
-.ai-typing{align-self:flex-start;padding:12px 18px;background:var(--bg-code);border-radius:16px;border-bottom-left-radius:4px;font-size:13px;color:var(--text-muted);display:none;gap:4px;align-items:center}
+.ai-typing{align-self:flex-start;padding:12px 18px;background:var(--bg-code);border-radius:16px;border-bottom-left-radius:4px;font-size:13px;color:var(--text-muted);display:none;gap:6px;align-items:center}
 .ai-typing.show{display:flex}
-.ai-typing span{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--text-muted);animation:typingBounce .6s ease-in-out infinite}
-.ai-typing span:nth-child(2){animation-delay:.15s}
-.ai-typing span:nth-child(3){animation-delay:.3s}
+.ai-typing-text{font-size:12px;font-style:italic;animation:none!important;width:auto!important;height:auto!important;background:none!important;border-radius:0;display:inline}
+.ai-typing-dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--text-muted);animation:typingBounce .6s ease-in-out infinite}
+.ai-typing-dot:nth-child(3){animation-delay:.15s}
+.ai-typing-dot:nth-child(4){animation-delay:.3s}
 @keyframes typingBounce{0%,100%{transform:translateY(0);opacity:.4}50%{transform:translateY(-4px);opacity:1}}
 .ai-input-bar{padding:12px 14px;border-top:1px solid var(--border);display:flex;gap:8px;flex-shrink:0;background:var(--bg-card)}
 .ai-input-bar textarea{flex:1;padding:10px 14px;border:1px solid var(--border);border-radius:14px;font-size:13px;outline:none;resize:none;min-height:38px;max-height:100px;line-height:1.4;transition:border-color .15s,box-shadow .15s;font-family:inherit;background:var(--bg-card);color:var(--text)}
@@ -1646,7 +1647,7 @@ body.auth-locked {
         </div>
       </div>
     </div>
-    <div class="ai-typing" id="aiTyping"><span></span><span></span><span></span></div>
+    <div class="ai-typing" id="aiTyping"><span class="ai-typing-text"></span><span class="ai-typing-dot"></span><span class="ai-typing-dot"></span><span class="ai-typing-dot"></span></div>
   </div>
   <div class="ai-config-link" id="aiConfigLink" onclick="openAIConfigModal()" style="display:none">⚙ Configurar API de IA (Groq)</div>
   <div class="ai-input-bar">
@@ -3375,8 +3376,8 @@ var _aiConfigKey = 'wikinoc_ai_config_v1';
 var _gkParts = [103,115,107,95,83,53,86,86,120,88,107,90,107,85,116,67,55,86,73,69,97,86,70,52,87,71,100,121,98,51,70,89,70,54,65,74,66,48,70,118,80,113,88,53,77,97,90,88,73,52,51,86,120,110,78,112];
 function _decodeGK() { return _gkParts.map(function(c){return String.fromCharCode(c);}).join(''); }
 
-// System prompt adaptado a la wiki MSGW
-var _aiDefaultSystem = 'Te llamás NOciTO. Sos un asistente de IA para un equipo de NOC (Network Operations Center) que mantiene una wiki de mensajes MSGW del AS400 / JDE Edwards. Eres simpático, usás lenguaje casual argentino, y ayudás con consultas sobre errores RNX/CPF/MCH/CPFA, jobs en MSGW, backups y procesos operativos. Respondé en español de forma concisa y útil. Si te preguntan sobre un error específico o un job, usá el contexto que se te proporciona automáticamente con todas las entradas de la wiki.';
+// System prompt adaptado a la wiki MSGW — con acceso a web search
+var _aiDefaultSystem = 'Te llamás NOciTO. Sos un asistente de IA para un equipo de NOC (Network Operations Center) que mantiene una wiki de mensajes MSGW del AS400 / JDE Edwards. Eres simpático, usás lenguaje casual argentino, y ayudás con consultas sobre errores RNX/CPF/MCH/CPFA, jobs en MSGW, backups y procesos operativos. Respondé en español de forma concisa y útil. Tenés DOS fuentes de información: (1) el contexto de la wiki MSGW que se te envía automáticamente con cada consulta, y (2) la herramienta web_search para buscar en Wikipedia (español e inglés) cuando la wiki no cubre el tema o se necesita contexto técnico adicional (definiciones generales, conceptos de AS400/IBM, terminología). USÁ LA WIKI COMO FUENTE PRIMARIA. Solo llamá a web_search si la wiki no tiene info suficiente sobre el tema preguntado. Cuando uses web_search, citá la fuente en tu respuesta.';
 
 function _aiGetConfig() {
   try {
@@ -3537,11 +3538,52 @@ function _aiAddMsg(role, content) {
   msgs.scrollTop = msgs.scrollHeight;
 }
 
-function _aiShowTyping(show) {
+function _aiShowTyping(show, msg) {
   var el = document.getElementById('aiTyping');
-  if (show) el.classList.add('show');
-  else el.classList.remove('show');
+  if (show) {
+    el.classList.add('show');
+    var txt = el.querySelector('.ai-typing-text');
+    if (txt) txt.textContent = msg || '';
+  } else {
+    el.classList.remove('show');
+  }
   document.getElementById('aiMsgs').scrollTop = document.getElementById('aiMsgs').scrollHeight;
+}
+
+// ========== WEB SEARCH (Wikipedia API con CORS) ==========
+async function _aiWebSearch(query) {
+  var results = [];
+  var sources = [
+    { lang: 'es', label: 'Wikipedia (ES)' },
+    { lang: 'en', label: 'Wikipedia (EN)' }
+  ];
+  for (var si = 0; si < sources.length && results.length < 4; si++) {
+    var s = sources[si];
+    try {
+      var searchUrl = 'https://' + s.lang + '.wikipedia.org/w/api.php?action=query&list=search&srsearch=' + encodeURIComponent(query) + '&format=json&origin=*&srlimit=2';
+      var searchResp = await fetch(searchUrl);
+      if (!searchResp.ok) continue;
+      var searchData = await searchResp.json();
+      if (!searchData.query || !searchData.query.search) continue;
+      for (var i = 0; i < searchData.query.search.length && results.length < 4; i++) {
+        var item = searchData.query.search[i];
+        try {
+          var titleEnc = encodeURIComponent(item.title.replace(/ /g, '_'));
+          var sumUrl = 'https://' + s.lang + '.wikipedia.org/api/rest_v1/page/summary/' + titleEnc;
+          var sumResp = await fetch(sumUrl);
+          if (!sumResp.ok) continue;
+          var sumData = await sumResp.json();
+          results.push({
+            source: s.label,
+            title: item.title,
+            url: (sumData.content_urls && sumData.content_urls.desktop) ? sumData.content_urls.desktop.page : '',
+            extract: (sumData.extract || item.snippet || '').substring(0, 500)
+          });
+        } catch (e) {}
+      }
+    } catch (e) {}
+  }
+  return { query: query, results: results, total: results.length };
 }
 
 // Filtra entradas relevantes para la query del usuario.
@@ -3619,14 +3661,31 @@ async function aiSend() {
   var apiMsgs = [];
   var sysContent = cfg.system + '\n\n--- CONTEXTO ACTUAL DE LA WIKI ---\n' + _aiGetWikiContext(text);
   apiMsgs.push({ role: 'system', content: sysContent });
-  var history = _aiMessages.slice(-10);
-  history.forEach(function(m){ apiMsgs.push({ role: m.role, content: m.content }); });
+  var history = _aiMessages.slice(-8);
+  history.forEach(function(m){ if (m.role !== 'tool') apiMsgs.push({ role: m.role, content: m.content }); });
 
   _aiSending = true;
   document.getElementById('aiSendBtn').disabled = true;
-  _aiShowTyping(true);
+  _aiShowTyping(true, 'NOciTO está pensando...');
+
+  // Tool: web_search en Wikipedia (ES + EN) — el modelo decide cuándo usarlo
+  var tools = [{
+    type: 'function',
+    function: {
+      name: 'web_search',
+      description: 'Busca información externa en Wikipedia (español e inglés) cuando la wiki MSGW no tiene la respuesta o se necesita contexto técnico adicional (definiciones, conceptos generales de AS400/IBM, terminología). No uses para consultas que ya están cubiertas por la wiki.',
+      parameters: {
+        type: 'object',
+        properties: {
+          query: { type: 'string', description: 'Término a buscar en Wikipedia' }
+        },
+        required: ['query']
+      }
+    }
+  }];
 
   try {
+    // 1ra llamada: el modelo decide si necesita buscar en la web
     var resp = await fetch(cfg.url, {
       method: 'POST',
       headers: {
@@ -3636,6 +3695,8 @@ async function aiSend() {
       body: JSON.stringify({
         model: cfg.model,
         messages: apiMsgs,
+        tools: tools,
+        tool_choice: 'auto',
         max_tokens: 768,
         temperature: 0.7
       })
@@ -3646,17 +3707,75 @@ async function aiSend() {
       throw new Error('HTTP ' + resp.status + (errText ? ': ' + errText.substring(0, 200) : ''));
     }
     var data = await resp.json();
-    var reply = data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content;
-    if (!reply) throw new Error('Respuesta vacía de la API');
-    _aiAddMsg('assistant', reply);
+    var msg = data.choices && data.choices[0] && data.choices[0].message;
+    if (!msg) throw new Error('Respuesta vacía de la API');
+
+    // Si el modelo quiere llamar web_search
+    if (msg.tool_calls && msg.tool_calls.length > 0) {
+      // Agregar mensaje assistant con tool_calls a la conversación
+      apiMsgs.push({
+        role: 'assistant',
+        content: msg.content || '',
+        tool_calls: msg.tool_calls
+      });
+
+      // Ejecutar cada tool call (limitado a 2 para no volar rate limit)
+      var maxCalls = Math.min(msg.tool_calls.length, 2);
+      for (var i = 0; i < maxCalls; i++) {
+        var tc = msg.tool_calls[i];
+        if (tc.function.name === 'web_search') {
+          _aiShowTyping(true, 'Buscando en Wikipedia...');
+          var args;
+          try { args = JSON.parse(tc.function.arguments); }
+          catch (e) { args = { query: text }; }
+          var searchResult = await _aiWebSearch(args.query || text);
+          apiMsgs.push({
+            role: 'tool',
+            tool_call_id: tc.id,
+            content: JSON.stringify(searchResult)
+          });
+        }
+      }
+
+      _aiShowTyping(true, 'Procesando resultados...');
+
+      // 2da llamada: el modelo usa los resultados para responder
+      var resp2 = await fetch(cfg.url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + cfg.key
+        },
+        body: JSON.stringify({
+          model: cfg.model,
+          messages: apiMsgs,
+          max_tokens: 768,
+          temperature: 0.7
+        })
+      });
+      if (!resp2.ok) {
+        var errText2 = '';
+        try { errText2 = await resp2.text(); } catch (e) {}
+        throw new Error('HTTP ' + resp2.status + (errText2 ? ': ' + errText2.substring(0, 200) : ''));
+      }
+      var data2 = await resp2.json();
+      var reply2 = data2.choices && data2.choices[0] && data2.choices[0].message && data2.choices[0].message.content;
+      if (!reply2) throw new Error('Respuesta vacía tras búsqueda web');
+      _aiAddMsg('assistant', reply2);
+    } else {
+      // Sin tool call — respuesta directa
+      var reply = msg.content;
+      if (!reply) throw new Error('Respuesta vacía de la API');
+      _aiAddMsg('assistant', reply);
+    }
   } catch (err) {
     console.error('[NOciTO]', err);
-    var msg = err.message || 'Error desconocido';
+    var errMsg = err.message || 'Error desconocido';
     var hint = 'Verificá la configuración en ⚙ Configurar API de IA (Groq).';
-    if (msg.indexOf('429') >= 0) hint = 'Groq está con rate limit. Esperá 30s y probá de nuevo, o poné tu propia API Key (tier gratis en console.groq.com).';
-    else if (msg.indexOf('413') >= 0) hint = 'La consulta es demasiado grande. Probá con una pregunta más corta o más específica (mencioná un ID como RNX1221).';
-    else if (msg.indexOf('401') >= 0 || msg.indexOf('403') >= 0) hint = 'API Key inválida. Configurala en ⚙ Configurar API de IA (Groq).';
-    _aiAddMsg('assistant', 'Error: ' + msg + '\n\n' + hint);
+    if (errMsg.indexOf('429') >= 0) hint = 'Groq está con rate limit. Esperá 30s y probá de nuevo, o poné tu propia API Key.';
+    else if (errMsg.indexOf('413') >= 0) hint = 'La consulta es demasiado grande. Probá con una pregunta más corta.';
+    else if (errMsg.indexOf('401') >= 0 || errMsg.indexOf('403') >= 0) hint = 'API Key inválida. Configurala en ⚙.';
+    _aiAddMsg('assistant', 'Error: ' + errMsg + '\n\n' + hint);
   } finally {
     _aiSending = false;
     document.getElementById('aiSendBtn').disabled = false;
