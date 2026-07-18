@@ -1375,7 +1375,7 @@ body.auth-locked {
         Gestionar
       </button>
       <div>
-        <div>18 mensajes base</div>
+        <div>19 mensajes base</div>
         <div>Última actualización: 2026-07-18</div>
       </div>
       <span class="user-chip" id="userChip">nocopera</span>
@@ -2421,6 +2421,34 @@ const BASE_ENTRIES = [
         "ticket": "—",
         "job": "P550431 / PA_PRDOBJ / sentencia 2532",
         "action": "RNQ0907 recibido a las 02:33:56 — error de datos decimales en P550431 sentencia 2532. Respondido con G — el job continuó normalmente."
+      }
+    ]
+  },
+  {
+    "id": "RNQ0114",
+    "title": "Año fuera de rango (1940–2039 para 2 dígitos) en conversión de Fecha/Hora",
+    "category": "Errores de Fecha / Hora",
+    "system": [
+      "Pinot"
+    ],
+    "severity": "warning",
+    "message": "ID de mensaje  . . . . :   RNQ0114\nFecha de envío . . . . :   18/07/26      Hora de envío  . . . . :   03:39:04\n\nMensaje . . . . :   La parte correspondiente al año de un valor de Fecha o de Indicación de la hora no está en el rango de 1940 a 2039 (C G D F).\n\nCausa . . . . . :   El procedimiento RPG PTRF62602V del programa AR_CLTOBJ/PTRF62602V en la sentencia 063600 ha solicitado una conversión a un valor de Fecha, desde un valor de Indicación de la Hora o de Fecha, y el año de origen no está en el rango permitido del destino.\n-- El rango para un año de 2 dígitos es 1940-2039.\n-- El rango para un año de 3 dígitos es 1900-2899.\n-- El rango para un año de 4 dígitos es 0001-9999.\n\nRecuperación  . :   Busque más información sobre la causa del error y póngase en contacto con la persona responsable del mantenimiento de programas.\n\nRespuestas posibles al mensaje  . . . . . . . . . . . . . .  :   C G D F",
+    "cause": "El procedimiento RPG PTRF62602V (biblioteca AR_CLTOBJ) falla en la sentencia 063600 al intentar convertir un valor de Fecha/Hora cuyo año está fuera del rango válido del campo destino. Para años de 2 dígitos el rango permitido es 1940-2039 (la ventana sliding por defecto del AS400). Suele pasar cuando el archivo de entrada trae un año mal formateado (por ejemplo '00' interpretado como 1900 en lugar de 2000, o un año basura como '99' que cae fuera de ventana), o cuando el campo viene con espacios/ceros que el RPG interpreta como un año inválido. Es un problema de datos del archivo de entrada, no del programa. La resolución estándar del NOC es cancelar el job con C y reenviar el archivo a la entidad correspondiente desde el menú G593.",
+    "programs": [
+      "PTRF62602V"
+    ],
+    "files": [],
+    "resolution": [
+      "Responder con C (cancelar) — el job finaliza para que el archivo problemático no continúe procesándose con datos inválidos.",
+      "Reenviar el archivo a la entidad correspondiente (S90063622C) desde el menú G593 del AS400.",
+      "Si el mensaje se repite sistemáticamente para la misma entidad, llamar a Ricardo Caldeiro porque indica un problema de generación de datos en origen que requiere investigación."
+    ],
+    "cases": [
+      {
+        "date": "2026-07-18",
+        "ticket": "—",
+        "job": "PTRF62602V / AR_CLTOBJ / sentencia 063600 — entidad S90063622C",
+        "action": "RNQ0114 recibido a las 03:39:04 — año fuera de rango 1940-2039 en conversión de Fecha/Hora. Respondido con C. Reenvío del archivo a la entidad S90063622C desde el menú G593."
       }
     ]
   }
