@@ -1375,8 +1375,8 @@ body.auth-locked {
         Gestionar
       </button>
       <div>
-        <div>16 mensajes base</div>
-        <div>Última actualización: 2026-07-15</div>
+        <div>18 mensajes base</div>
+        <div>Última actualización: 2026-07-18</div>
       </div>
       <span class="user-chip" id="userChip">nocopera</span>
       <button class="btn-logout" id="btnLogout" title="Cerrar sesión">
@@ -2393,6 +2393,34 @@ const BASE_ENTRIES = [
         "ticket": "—",
         "job": "UNZIPJRNL",
         "action": "Enviado instructivo a Anibal Rivero. Pendiente de documentación detallada del procedimiento."
+      }
+    ]
+  },
+  {
+    "id": "RNQ0907",
+    "title": "Error de datos decimales (valor empaquetado o de zona no numérico válido)",
+    "category": "Errores de Archivo / Operación",
+    "system": [
+      "Pinot"
+    ],
+    "severity": "warning",
+    "message": "ID de mensaje  . . . . :   RNQ0907\nFecha de envío . . . . :   18/07/26      Hora de envío  . . . . :   02:33:56\n\nMensaje . . . . :   Se ha producido un error de datos decimales (C G D F).\n\nCausa . . . . . :   El procedimiento RPG P550431 en el programa PA_PRDOBJ/P550431 ha encontrado un error de datos decimales en la sentencia 2532. Un valor empaquetado o de zona no contiene datos numéricos válidos. Un dígito y/o signo no es válido.\n\nRecuperación  . :   Póngase en contacto con el responsable de mantenimiento de programas para determinar la causa del problema. Una respuesta 'D' provocará un vuelco con formato RPG que puede ser de utilidad para determinar en qué campo se ha producido el error de datos decimales. Sin embargo, el error puede encontrase en un valor intermedio si se ha producido en una expresión.\n\nRespuestas posibles al mensaje  . . . . . . . . . . . . . .  :   C G D F",
+    "cause": "El procedimiento RPG P550431 (biblioteca PA_PRDOBJ) falla en la sentencia 2532 porque intenta procesar un valor numérico (empaquetado/packed o de zona/zoned) que contiene dígitos o signo inválidos. Es un error de datos: el campo viene con basura desde el archivo o desde un cálculo intermedio. RNQ0907 es el wrapper RPG del MCH1202 (data decimal error) — aparece cuando el programa no tiene MONMSG explícito sobre la operación que dispara el MCH1202. La respuesta estándar del NOC es contestar con G para que el job continúe (ignorando el dato problemático en esa iteración).",
+    "programs": [
+      "P550431"
+    ],
+    "files": [],
+    "resolution": [
+      "Responder con G (continuar) — el job finaliza normalmente y continúa con el siguiente registro.",
+      "Si el mensaje se repite sistemáticamente para el mismo job/entidad, llamar a Ricardo Caldeiro porque indica un problema de datos que requiere investigación.",
+      "Opcional: responder con D (dump) para obtener un vuelco con formato RPG que permita identificar en qué campo exacto se produjo el error de datos decimales. Útil para diagnóstico pero el job no continúa hasta responder C/G/F después."
+    ],
+    "cases": [
+      {
+        "date": "2026-07-18",
+        "ticket": "—",
+        "job": "P550431 / PA_PRDOBJ / sentencia 2532",
+        "action": "RNQ0907 recibido a las 02:33:56 — error de datos decimales en P550431 sentencia 2532. Respondido con G — el job continuó normalmente."
       }
     ]
   }
